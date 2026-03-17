@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IEI-088 · Semana 1 — Índices en Bases de Datos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:#f5f4f0; --surface:#edecea; --card:#ffffff; --card2:#f9f8f6;
+      --border:#dddbd6; --border2:#c8c5be;
+      --text:#2c2b28; --text2:#514f4a; --muted:#89877f;
+      --sage:#5a7d6b; --sage-lt:#d4e4db; --sage-dim:rgba(90,125,107,.1);
+      --teal:#3d7a8a; --teal-lt:#cce2e8;
+      --amber:#b07d3a; --amber-lt:#f0e2c8;
+      --rose:#9b5c5c; --rose-lt:#f0d8d8;
+      --plum:#6b5c8a; --plum-lt:#e0d8f0;
+      --code-bg:#1e2228; --code-txt:#d4d0c8;
+      --font-head:'Lora',Georgia,serif;
+      --font-body:'DM Sans',sans-serif;
+      --font-code:'JetBrains Mono',monospace;
+      --max-w:880px; --r:10px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;font-size:17px}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.75;overflow-x:hidden}
+    body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+      background-image:radial-gradient(ellipse 80% 50% at 10% 20%,rgba(90,125,107,.06) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%,rgba(61,122,138,.05) 0%,transparent 55%)}
+
+    /* ── PROGRESS ── */
+    #progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--sage),var(--teal));width:0%;z-index:300;transition:width .1s}
+
+    /* ════════════════════════════════════════
+       NAV — responsive profesional
+    ════════════════════════════════════════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(245,244,240,.96);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      /* altura fija para alinear todo */
+      height: 56px;
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      height: 100%; padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem;
+    }
+
+    /* Marca */
+    .nav-brand {
+      font-family: var(--font-head); font-size: .9rem; font-weight: 700;
+      color: var(--sage); white-space: nowrap; flex-shrink: 0;
+      text-decoration: none;
+    }
+    .nav-brand span { color: var(--text2); font-weight: 400; }
+
+    /* Links desktop */
+    .nav-links {
+      display: flex; align-items: center; gap: .15rem;
+      flex: 1; justify-content: center;
+    }
+    .nav-links a {
+      font-size: .72rem; font-weight: 500; color: var(--muted);
+      text-decoration: none; padding: .32rem .65rem; border-radius: 6px;
+      transition: color .2s, background .2s; white-space: nowrap;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: 0; left: 50%; right: 50%;
+      height: 2px; background: var(--sage); border-radius: 2px;
+      transition: left .2s, right .2s;
+    }
+    .nav-links a:hover { color: var(--sage); background: var(--sage-dim); }
+    .nav-links a.on  { color: var(--sage); background: var(--sage-dim); }
+    .nav-links a.on::after { left: 8px; right: 8px; }
+
+    /* XP pill */
+    .xp-pill {
+      display: flex; align-items: center; gap: .3rem;
+      font-family: var(--font-code); font-size: .72rem;
+      color: var(--amber); background: var(--amber-lt);
+      border-radius: 999px; padding: .22rem .75rem;
+      white-space: nowrap; flex-shrink: 0;
+      border: 1px solid rgba(176,125,58,.2);
+    }
+
+    /* Hamburger button */
+    .nav-burger {
+      display: none; flex-direction: column; justify-content: center;
+      align-items: center; gap: 5px;
+      width: 40px; height: 40px; border-radius: 8px;
+      background: none; border: 1.5px solid var(--border);
+      cursor: pointer; flex-shrink: 0;
+      transition: border-color .2s, background .2s;
+    }
+    .nav-burger:hover { border-color: var(--sage); background: var(--sage-dim); }
+    .nav-burger span {
+      display: block; width: 18px; height: 1.5px;
+      background: var(--text2); border-radius: 2px;
+      transition: transform .3s ease, opacity .3s ease, width .3s ease;
+      transform-origin: center;
+    }
+    /* Burger → X cuando está abierto */
+    .nav-burger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-burger.open span:nth-child(2) { opacity: 0; width: 0; }
+    .nav-burger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* Drawer móvil */
+    .nav-drawer {
+      position: fixed; top: 56px; left: 0; right: 0; z-index: 190;
+      background: rgba(245,244,240,.98);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0; max-height: 0; overflow: hidden;
+      transition: max-height .35s cubic-bezier(.4,0,.2,1),
+                  padding .35s ease, opacity .3s ease;
+      opacity: 0;
+    }
+    .nav-drawer.open {
+      max-height: 500px; padding: .75rem 1.5rem 1.25rem; opacity: 1;
+    }
+    .drawer-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .35rem;
+      margin-bottom: .75rem;
+    }
+    .drawer-link {
+      display: flex; align-items: center; gap: .55rem;
+      padding: .65rem .85rem; border-radius: 8px;
+      font-size: .85rem; font-weight: 500; color: var(--text2);
+      text-decoration: none; transition: all .18s;
+      border: 1px solid transparent;
+    }
+    .drawer-link:hover, .drawer-link.on {
+      background: var(--sage-dim); color: var(--sage);
+      border-color: var(--sage-lt);
+    }
+    .drawer-link .d-icon { font-size: 1rem; flex-shrink: 0; }
+    .drawer-divider {
+      height: 1px; background: var(--border); margin: .5rem 0;
+    }
+    .drawer-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: .4rem;
+    }
+    .drawer-brand {
+      font-family: var(--font-head); font-size: .8rem;
+      color: var(--muted);
+    }
+
+    /* Overlay detrás del drawer */
+    .nav-overlay {
+      position: fixed; inset: 0; z-index: 180;
+      background: rgba(44,43,40,.25);
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    .nav-overlay.on { opacity: 1; pointer-events: auto; }
+
+    /* ── BREAKPOINTS NAV ── */
+    @media (max-width: 780px) {
+      .nav-links { display: none; }
+      .nav-burger { display: flex; }
+    }
+    @media (max-width: 480px) {
+      .nav-inner { padding: 0 1rem; }
+      .nav-brand font-size: .82rem; }
+      .drawer-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── SECTIONS ── */
+    section{max-width:var(--max-w);margin:0 auto;padding:5rem 1.5rem 3rem}
+    section:first-of-type{padding-top:6rem}
+    @media(max-width:480px){
+      section{padding:4.5rem 1rem 2.5rem}
+      section:first-of-type{padding-top:5.5rem}
+    }
+
+    /* ── REVEAL ── */
+    .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+    .reveal.in{opacity:1;transform:none}
+
+    /* ── TYPOGRAPHY ── */
+    .eyebrow{font-family:var(--font-body);font-size:.7rem;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--sage);margin-bottom:.5rem;display:block}
+    h1{font-family:var(--font-head);font-weight:700;font-size:clamp(2.2rem,5vw,3.2rem);line-height:1.15;letter-spacing:-.5px}
+    h2{font-family:var(--font-head);font-weight:700;font-size:1.65rem;line-height:1.2;letter-spacing:-.3px;color:var(--text);margin-bottom:.4rem}
+    h3{font-family:var(--font-head);font-weight:600;font-size:1.05rem;color:var(--text2);margin-bottom:.5rem}
+    p{color:var(--text2);margin-bottom:1rem}
+    p:last-child{margin-bottom:0}
+    strong{color:var(--text);font-weight:600}
+    mark{background:var(--amber-lt);color:var(--amber);padding:.1em .35em;border-radius:4px;font-weight:500}
+    code{font-family:var(--font-code);font-size:.8em;background:var(--surface);color:var(--sage);padding:.1em .4em;border-radius:4px;border:1px solid var(--border)}
+    .rule{width:44px;height:3px;border-radius:2px;background:var(--sage);margin:.5rem 0 1.8rem;opacity:.55}
+    .lead{font-size:1rem;color:var(--text2);line-height:1.8}
+
+    /* ── BADGES ── */
+    .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.73rem;font-weight:500;padding:.32rem .8rem;border-radius:999px;border:1px solid;white-space:nowrap}
+    .b-sage{color:var(--sage);border-color:var(--sage-lt);background:var(--sage-dim)}
+    .b-teal{color:var(--teal);border-color:var(--teal-lt);background:rgba(61,122,138,.07)}
+    .b-amber{color:var(--amber);border-color:var(--amber-lt);background:rgba(176,125,58,.07)}
+    .b-plum{color:var(--plum);border-color:var(--plum-lt);background:rgba(107,92,138,.07)}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:1.6rem}
+
+    /* ── CARDS ── */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;margin-bottom:1rem;transition:box-shadow .2s}
+    .card:hover{box-shadow:0 4px 18px rgba(0,0,0,.06)}
+    .card-icon{font-size:1.5rem;margin-bottom:.55rem}
+    .card-title{font-family:var(--font-head);font-weight:600;font-size:.98rem;margin-bottom:.3rem;color:var(--text)}
+    .card-body{font-size:.87rem;color:var(--text2);line-height:1.65;margin:0}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+    @media(max-width:640px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+    /* ── DEF BOXES ── */
+    .def{border-radius:var(--r);padding:1.3rem 1.5rem;margin-bottom:1rem}
+    .def-label{font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:.45rem}
+    .def-text{font-size:.9rem;line-height:1.8;color:var(--text2);margin:0}
+    .def-cite{font-size:.76rem;color:var(--muted);margin-top:.65rem;font-style:italic;display:block}
+    .def.tech{background:rgba(61,122,138,.05);border:1px solid var(--teal-lt);border-left:4px solid var(--teal)}
+    .def.tech .def-label{color:var(--teal)}
+    .def.simple{background:rgba(90,125,107,.05);border:1px solid var(--sage-lt);border-left:4px solid var(--sage)}
+    .def.simple .def-label{color:var(--sage)}
+    .def.biblio{background:var(--amber-lt);border:1px solid rgba(176,125,58,.25);border-left:4px solid var(--amber)}
+    .def.biblio .def-label{color:var(--amber)}
+    .def.biblio .def-text{font-style:italic}
+
+    /* ── OBJECTIVES ── */
+    .obj-checklist{list-style:none}
+    .obj-checklist li{display:flex;align-items:flex-start;gap:.7rem;padding:.55rem 0;border-bottom:1px solid var(--border);font-size:.9rem;color:var(--text2)}
+    .obj-checklist li:last-child{border-bottom:none}
+    .obj-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border2);flex-shrink:0;margin-top:2px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:.68rem;color:transparent}
+    .obj-check.done{background:var(--sage);border-color:var(--sage);color:#fff}
+    .obj-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.8rem}
+    @media(max-width:640px){.obj-cards{grid-template-columns:1fr}}
+    .obj-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.4rem;display:flex;gap:.9rem;align-items:flex-start}
+    .obj-card.k{border-top:3px solid var(--sage)}
+    .obj-card.s{border-top:3px solid var(--teal)}
+    .obj-card.a{border-top:3px solid var(--amber)}
+    .obj-card.e{border-top:3px solid var(--plum)}
+    .obj-ico{font-size:1.4rem;flex-shrink:0;margin-top:.1rem}
+    .obj-lbl{font-size:.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+    .obj-txt{font-size:.87rem;color:var(--text2);line-height:1.6;margin:0}
+
+    /* ── SCENARIO ── */
+    .scenario{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.7rem 1.9rem;margin:1.4rem 0;border-top:4px solid var(--plum)}
+    .scenario-tag{font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--plum);margin-bottom:.65rem;display:block}
+    .scenario-title{font-family:var(--font-head);font-weight:700;font-size:1.2rem;margin-bottom:.75rem;color:var(--text)}
+
+    /* ── CODE BLOCKS ── */
+    .code-wrap{background:var(--code-bg);border-radius:var(--r);overflow:hidden;margin:1rem 0;border:1px solid #2e3440}
+    .code-header{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1.1rem;background:#181d24;border-bottom:1px solid #2e3440}
+    .dots{display:flex;gap:5px}
+    .dots span{width:11px;height:11px;border-radius:50%}
+    .dots span:nth-child(1){background:#ff5f57}
+    .dots span:nth-child(2){background:#febc2e}
+    .dots span:nth-child(3){background:#28c840}
+    .code-lbl{font-family:var(--font-code);font-size:.66rem;color:#6b7280;letter-spacing:.5px}
+    .copy-btn{font-family:var(--font-code);font-size:.65rem;background:transparent;border:1px solid #3a4050;color:#6b7280;padding:.17rem .52rem;border-radius:4px;cursor:pointer;transition:all .2s}
+    .copy-btn:hover{color:var(--sage);border-color:var(--sage)}
+    pre{padding:1.3rem 1.5rem;overflow-x:auto;font-family:var(--font-code);font-size:.8rem;line-height:2.05;color:var(--code-txt)}
+    .kw{color:#88c0d0} .fn{color:#81a1c1} .str{color:#a3be8c} .cm{color:#4c566a;font-style:italic} .tbl{color:#ebcb8b} .nu{color:#b48ead}
+    /* line highlight */
+    .hl{background:rgba(255,255,255,.04);border-left:2px solid rgba(136,192,208,.3);display:block;margin-left:-1.5rem;padding-left:1.5rem}
+
+    /* ── ANALOGY ── */
+    .analogy{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.6rem;display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:.8rem;align-items:center;margin:1.4rem 0}
+    @media(max-width:640px){.analogy{grid-template-columns:1fr;text-align:center}}
+    .an-icon{font-size:2.2rem;display:block;margin-bottom:.4rem}
+    .an-title{font-family:var(--font-head);font-weight:600;font-size:.88rem;color:var(--text)}
+    .an-desc{font-size:.75rem;color:var(--muted);margin-top:.15rem;line-height:1.5}
+    .an-arrow{font-size:1.2rem;color:var(--border2);text-align:center}
+
+    /* ── PERF DEMO ── */
+    .perf-demo{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.7rem;margin:1.4rem 0}
+    .perf-head{font-family:var(--font-head);font-weight:600;margin-bottom:1.3rem;font-size:1rem}
+    .perf-row{display:flex;align-items:center;gap:1rem;margin-bottom:.9rem}
+    .perf-lbl{font-family:var(--font-code);font-size:.73rem;width:150px;flex-shrink:0;color:var(--text2)}
+    .perf-track{flex:1;background:var(--surface);border-radius:999px;height:22px;overflow:hidden;border:1px solid var(--border)}
+    .perf-fill{height:100%;border-radius:999px;width:0%;display:flex;align-items:center;padding-left:10px;font-family:var(--font-code);font-size:.67rem;font-weight:600;transition:width 1.3s cubic-bezier(.23,1,.32,1)}
+    .perf-fill.slow{background:linear-gradient(90deg,var(--rose),#c47a7a);color:#fff}
+    .perf-fill.fast{background:linear-gradient(90deg,var(--sage),#7aab8e);color:#fff}
+    .perf-msg{margin-top:.9rem;font-size:.83rem;color:var(--muted);display:none}
+
+    /* ── IDX CARDS ── */
+    .idx-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.1rem;cursor:pointer;transition:all .2s}
+    .idx-card:hover{border-color:var(--sage);box-shadow:0 4px 14px rgba(90,125,107,.1);transform:translateY(-2px)}
+    .idx-card.on{border-color:var(--sage);background:rgba(90,125,107,.04)}
+    .idx-icon{font-size:1.3rem;margin-bottom:.35rem}
+    .idx-name{font-family:var(--font-head);font-weight:600;font-size:.88rem;color:var(--text)}
+    .idx-desc{font-size:.76rem;color:var(--muted);margin-top:.18rem;line-height:1.5}
+
+    /* ── STEP LABELS ── */
+    .step-lbl{font-family:var(--font-code);font-size:.7rem;font-weight:600;color:var(--sage);display:flex;align-items:center;gap:.5rem;margin:1.5rem 0 .7rem}
+    .step-num{width:21px;height:21px;background:var(--sage);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.62rem;flex-shrink:0;font-weight:700}
+
+    /* ── ER DIAGRAM ── */
+    .er-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;margin:1.4rem 0}
+    .er-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem}
+    @media(max-width:640px){.er-grid{grid-template-columns:1fr}}
+    .er-symbol{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.3rem;display:flex;align-items:flex-start;gap:1rem}
+    .er-sym-vis{flex-shrink:0;width:60px;display:flex;align-items:center;justify-content:center}
+    .er-sym-info{}
+    .er-sym-name{font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.2rem}
+    .er-sym-desc{font-size:.8rem;color:var(--text2);line-height:1.6;margin:0}
+    .er-card-type{font-size:.63rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;display:block}
+
+    /* ── SSMS STEPS ── */
+    .ssms-steps{display:flex;flex-direction:column;gap:.8rem}
+    .ssms-step{display:flex;gap:1rem;align-items:flex-start;background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem}
+    .ssms-num{width:28px;height:28px;background:var(--teal);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0}
+    .ssms-content{}
+    .ssms-title{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.2rem}
+    .ssms-desc{font-size:.84rem;color:var(--text2);line-height:1.65;margin:0}
+    .ssms-note{font-size:.77rem;color:var(--muted);margin-top:.3rem;font-style:italic}
+    .ssms-path{font-family:var(--font-code);font-size:.76rem;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:.2rem .55rem;color:var(--teal);display:inline-block;margin:.3rem 0}
+
+    /* ── QUIZ ── */
+    .quiz-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.8rem}
+    .quiz-num{font-family:var(--font-code);font-size:.68rem;color:var(--muted);margin-bottom:.55rem;display:block}
+    .quiz-q{font-family:var(--font-head);font-weight:600;font-size:1.02rem;line-height:1.5;margin-bottom:1.2rem;color:var(--text)}
+    .quiz-opts{display:flex;flex-direction:column;gap:.55rem}
+    .quiz-opt{display:flex;align-items:center;gap:.75rem;padding:.8rem 1.05rem;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;font-size:.88rem;color:var(--text2);transition:all .2s}
+    .quiz-opt:hover{border-color:var(--sage);background:var(--sage-dim)}
+    .quiz-opt.ok{border-color:var(--sage);background:rgba(90,125,107,.07);color:var(--sage)}
+    .quiz-opt.err{border-color:var(--rose);background:rgba(155,92,92,.06);color:var(--rose)}
+    .quiz-opt.off{pointer-events:none;opacity:.7}
+    .q-let{width:24px;height:24px;border-radius:6px;background:var(--surface);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:var(--font-code);font-size:.67rem;flex-shrink:0;font-weight:600;color:var(--muted)}
+    .quiz-fb{margin-top:.9rem;padding:.85rem 1.05rem;border-radius:8px;font-size:.86rem;display:none;line-height:1.65}
+    .quiz-fb.show{display:block}
+    .quiz-fb.ok{background:rgba(90,125,107,.08);border:1px solid rgba(90,125,107,.25);color:var(--sage)}
+    .quiz-fb.err{background:rgba(155,92,92,.07);border:1px solid rgba(155,92,92,.2);color:var(--rose)}
+    .quiz-score{text-align:center;margin-top:1.4rem;font-family:var(--font-head);font-size:1rem;color:var(--text2)}
+    .quiz-score b{color:var(--sage);font-size:1.7rem;font-weight:700;display:block;margin-bottom:.2rem}
+    .quiz-nav{display:flex;gap:.65rem;margin-top:1.4rem;flex-wrap:wrap}
+
+    /* ── BUTTONS ── */
+    .btn{font-family:var(--font-body);font-weight:600;font-size:.83rem;padding:.58rem 1.35rem;border-radius:8px;cursor:pointer;border:none;transition:all .2s}
+    .btn-primary{background:var(--sage);color:#fff}
+    .btn-primary:hover{background:#4a6d5b;box-shadow:0 4px 14px rgba(90,125,107,.3)}
+    .btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2)}
+    .btn-ghost:hover{border-color:var(--sage);color:var(--sage)}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+
+    /* ── CHECKLIST ── */
+    .checklist{list-style:none}
+    .checklist li{display:flex;align-items:flex-start;gap:.6rem;padding:.52rem 0;border-bottom:1px solid var(--border);font-size:.88rem;color:var(--text2)}
+    .checklist li:last-child{border-bottom:none}
+    .checklist li::before{content:'▸';color:var(--sage);font-size:.68rem;margin-top:4px;flex-shrink:0}
+
+    /* ── GLOSARIO ── */
+    .glosario-search{width:100%;padding:.8rem 1.1rem;font-family:var(--font-body);font-size:.95rem;border:1.5px solid var(--border);border-radius:var(--r);background:var(--card);color:var(--text);outline:none;transition:border-color .2s;margin-bottom:1.4rem}
+    .glosario-search:focus{border-color:var(--sage)}
+    .glosario-search::placeholder{color:var(--muted)}
+    .glos-cats{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1.2rem}
+    .glos-cat{font-size:.73rem;font-weight:600;padding:.28rem .72rem;border-radius:999px;border:1.5px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;transition:all .2s}
+    .glos-cat:hover,.glos-cat.on{border-color:var(--sage);color:var(--sage);background:var(--sage-dim)}
+    .glos-count{font-size:.8rem;color:var(--muted);margin-bottom:1rem}
+    .glos-grid{display:flex;flex-direction:column;gap:.6rem}
+    .glos-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.3rem;cursor:pointer;transition:all .2s}
+    .glos-item:hover{border-color:var(--sage-lt);box-shadow:0 3px 12px rgba(0,0,0,.05)}
+    .glos-item.open .glos-body{display:block}
+    .glos-item.open{border-color:var(--sage)}
+    .glos-header{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+    .glos-term{font-family:var(--font-code);font-weight:600;font-size:.9rem;color:var(--text)}
+    .glos-tag{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:.2rem .55rem;border-radius:4px;flex-shrink:0}
+    .gt-sql{background:rgba(61,122,138,.1);color:var(--teal)}
+    .gt-concept{background:rgba(90,125,107,.1);color:var(--sage)}
+    .gt-prev{background:rgba(107,92,138,.1);color:var(--plum)}
+    .gt-ssms{background:rgba(176,125,58,.1);color:var(--amber)}
+    .glos-arrow{color:var(--muted);font-size:.8rem;transition:transform .2s;flex-shrink:0}
+    .glos-item.open .glos-arrow{transform:rotate(180deg)}
+    .glos-body{display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
+    .glos-tech{font-size:.85rem;color:var(--text2);line-height:1.75;margin-bottom:.5rem}
+    .glos-simple{font-size:.83rem;color:var(--sage);background:var(--sage-dim);border-radius:6px;padding:.5rem .75rem;margin:0}
+    .glos-hidden{display:none}
+
+    /* ── METACOGNICIÓN ── */
+    .meta-section{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2.2rem 2rem;border-top:4px solid var(--sage)}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem}
+    @media(max-width:640px){.meta-grid{grid-template-columns:1fr}}
+    .meta-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:1.2rem}
+    .meta-card-title{font-family:var(--font-head);font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:.55rem;display:flex;align-items:center;gap:.45rem}
+    .meta-ta{width:100%;min-height:85px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.7rem .95rem;font-family:var(--font-body);font-size:.86rem;color:var(--text2);resize:vertical;outline:none;line-height:1.6;transition:border-color .2s}
+    .meta-ta:focus{border-color:var(--sage)}
+    .meta-ta::placeholder{color:var(--muted)}
+    .semaforo{display:flex;flex-direction:column;gap:.55rem;margin-top:.35rem}
+    .sem-opt{display:flex;align-items:center;gap:.65rem;padding:.55rem .85rem;border-radius:8px;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-size:.86rem;color:var(--text2);transition:all .2s}
+    .sem-opt:hover{border-color:var(--border2)}
+    .sem-opt.sel{border-color:var(--sage);background:var(--sage-dim);color:var(--text)}
+    .sem-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0}
+    .dot-r{background:#c97b7b} .dot-y{background:var(--amber)} .dot-g{background:var(--sage)}
+    .stars{display:flex;gap:.45rem;margin-top:.35rem}
+    .star-btn{font-size:1.4rem;background:none;border:none;cursor:pointer;transition:transform .15s;opacity:.3;color:var(--amber)}
+    .star-btn:hover,.star-btn.lit{opacity:1;transform:scale(1.2)}
+
+    /* ── FORM PANEL ── */
+    .form-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;border-top:4px solid var(--teal)}
+    .form-info{background:rgba(61,122,138,.05);border:1px solid var(--teal-lt);border-radius:8px;padding:1rem 1.2rem;font-size:.85rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.7}
+    .form-info strong{color:var(--teal)}
+    .form-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap}
+    .form-tab{font-size:.78rem;font-weight:600;padding:.35rem .9rem;border-radius:6px;border:1.5px solid var(--border);background:var(--card2);color:var(--muted);cursor:pointer;transition:all .2s}
+    .form-tab.on{border-color:var(--teal);color:var(--teal);background:rgba(61,122,138,.06)}
+    .form-pane{display:none}
+    .form-pane.on{display:block}
+    .form-field{margin-bottom:1.1rem}
+    .form-label{font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:.35rem;display:block}
+    .form-input,.form-select,.form-textarea{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:.88rem;color:var(--text);background:var(--card2);outline:none;transition:border-color .2s}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--teal)}
+    .form-textarea{min-height:75px;resize:vertical;line-height:1.6}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+    @media(max-width:500px){.form-row{grid-template-columns:1fr}}
+    .responses-area{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;max-height:320px;overflow-y:auto}
+    .response-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:.7rem}
+    .response-item:last-child{margin-bottom:0}
+    .resp-meta{font-family:var(--font-code);font-size:.68rem;color:var(--muted);margin-bottom:.4rem;display:flex;justify-content:space-between}
+    .resp-name{font-weight:600;color:var(--text);font-size:.88rem;margin-bottom:.3rem}
+    .resp-data{font-size:.83rem;color:var(--text2);line-height:1.6}
+    .empty-msg{text-align:center;color:var(--muted);font-size:.88rem;padding:1.5rem}
+    .resp-badge{display:inline-block;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:4px;background:var(--sage-dim);color:var(--sage);margin-left:.4rem}
+
+    /* ── TOAST ── */
+    #toast{position:fixed;bottom:1.7rem;right:1.7rem;z-index:500;background:var(--card);border:1px solid var(--sage-lt);border-radius:10px;padding:.7rem 1rem;font-family:var(--font-body);font-size:.8rem;font-weight:500;color:var(--sage);transform:translateY(70px);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .35s;box-shadow:0 8px 28px rgba(90,125,107,.15)}
+    #toast.on{transform:none;opacity:1}
+
+    /* ── FOOTER ── */
+    footer{text-align:center;padding:2.2rem 2rem;border-top:1px solid var(--border);font-size:.76rem;color:var(--muted)}
+
+    @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+    .hero-anim>*{opacity:0;animation:up .6s ease forwards}
+    .hero-anim>*:nth-child(1){animation-delay:.15s}
+    .hero-anim>*:nth-child(2){animation-delay:.3s}
+    .hero-anim>*:nth-child(3){animation-delay:.45s}
+    .hero-anim>*:nth-child(4){animation-delay:.6s}
+  </style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="toast"><span id="toast-msg"></span></div>
+
+<!-- NAV OVERLAY (móvil) -->
+<div class="nav-overlay" id="nav-overlay" onclick="closeDrawer()"></div>
+
+<!-- NAV PRINCIPAL -->
+<nav id="main-nav">
+  <div class="nav-inner">
+    <!-- Marca -->
+    <a href="#hero" class="nav-brand">IEI-088 <span>· S01</span></a>
+
+    <!-- Links desktop -->
+    <div class="nav-links" id="nav-links">
+      <a href="#objetivos" class="on">Objetivos</a>
+      <a href="#ssms">SSMS</a>
+      <a href="#concepto">Concepto</a>
+      <a href="#er">Modelo ER</a>
+      <a href="#tipos">Tipos</a>
+      <a href="#practica">Práctica</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#glosario">Glosario</a>
+      <a href="#formulario">Formulario</a>
+      <a href="#cierre">Cierre</a>
+    </div>
+
+    <!-- XP + Burger -->
+    <div style="display:flex;align-items:center;gap:.6rem;flex-shrink:0">
+      <div class="xp-pill">⚡ <span id="xp-display">0</span> XP</div>
+      <button class="nav-burger" id="nav-burger" aria-label="Menú" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- DRAWER MÓVIL -->
+<div class="nav-drawer" id="nav-drawer">
+  <div class="drawer-grid">
+    <a href="#objetivos" class="drawer-link" onclick="closeDrawer()"><span class="d-icon">🎯</span>Objetivos</a>
+    <a href="#ssms"      class="drawer-link" onclick="closeDrawer()"><span class="d-icon">🖥️</span>SSMS</a>
+    <a href="#concepto"  class="drawer-link" onclick="closeDrawer()"><span class="d-icon">💡</span>Concepto</a>
+    <a href="#er"        class="drawer-link" onclick="closeDrawer()"><span class="d-icon">🗺️</span>Modelo ER</a>
+    <a href="#tipos"     class="drawer-link" onclick="closeDrawer()"><span class="d-icon">📋</span>Tipos</a>
+    <a href="#practica"  class="drawer-link" onclick="closeDrawer()"><span class="d-icon">⚗️</span>Práctica</a>
+    <a href="#quiz"      class="drawer-link" onclick="closeDrawer()"><span class="d-icon">🧩</span>Quiz</a>
+    <a href="#glosario"  class="drawer-link" onclick="closeDrawer()"><span class="d-icon">📚</span>Glosario</a>
+    <a href="#formulario"class="drawer-link" onclick="closeDrawer()"><span class="d-icon">📝</span>Formulario</a>
+    <a href="#cierre"    class="drawer-link" onclick="closeDrawer()"><span class="d-icon">🧠</span>Cierre</a>
+  </div>
+  <div class="drawer-divider"></div>
+  <div class="drawer-footer">
+    <span class="drawer-brand">Diseño de Bases de Datos · Unidad I</span>
+    <div class="xp-pill" style="font-size:.7rem">⚡ <span id="xp-display-mob">0</span> XP</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ HERO -->
+<section id="hero">
+  <div class="hero-anim">
+    <span class="eyebrow">Unidad I — Decisiones en el Diseño · IEI-088</span>
+    <h1>Índices en<br/>Bases de Datos</h1>
+    <p class="lead" style="max-width:560px;margin-top:.9rem">Aprende a optimizar consultas SQL con índices usando <strong>SQL Server Management Studio</strong> — la herramienta profesional de la industria.</p>
+    <div class="hero-meta">
+      <span class="badge b-sage">🎯 Actividad 1.1 · Formativa</span>
+      <span class="badge b-teal">⏱ 3 hrs pedagógicas</span>
+      <span class="badge b-amber">👥 Grupal — 2 personas</span>
+      <span class="badge b-plum">🖥️ SQL Server Management Studio</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ OBJETIVOS -->
+<section id="objetivos" class="reveal">
+  <span class="eyebrow">// antes de comenzar</span>
+  <h2>Objetivos de la Clase</h2>
+  <div class="rule"></div>
+  <p class="lead">Al finalizar esta sesión serás capaz de cumplir los siguientes objetivos. Márcalos a medida que los vayas logrando. ✓</p>
+  <ul class="obj-checklist" id="obj-list">
+    <li><div class="obj-check" onclick="checkObj(this)"></div><span><strong>Definir</strong> qué es un índice en una base de datos y explicar su funcionamiento (B-Tree).</span></li>
+    <li><div class="obj-check" onclick="checkObj(this)"></div><span><strong>Identificar</strong> consultas que se beneficiarían de un índice, usando <code>EXPLAIN</code> o el plan de ejecución de SSMS.</span></li>
+    <li><div class="obj-check" onclick="checkObj(this)"></div><span><strong>Distinguir</strong> los tipos de índices disponibles en SQL Server (Clustered, Non-Clustered, Unique, compuesto).</span></li>
+    <li><div class="obj-check" onclick="checkObj(this)"></div><span><strong>Crear</strong> índices apropiados para optimizar consultas según requerimientos del cliente.</span></li>
+    <li><div class="obj-check" onclick="checkObj(this)"></div><span><strong>Evaluar</strong> cuándo un índice ayuda y cuándo genera overhead innecesario.</span></li>
+  </ul>
+  <div class="obj-cards">
+    <div class="obj-card k"><div class="obj-ico">🧠</div><div><div class="obj-lbl">Conocimiento</div><p class="obj-txt">Índices: estructura, tipos y comportamiento en el motor de SQL Server.</p></div></div>
+    <div class="obj-card s"><div class="obj-ico">🛠️</div><div><div class="obj-lbl">Habilidad</div><p class="obj-txt">Identificar y crear índices apropiados para optimizar consultas específicas.</p></div></div>
+    <div class="obj-card a"><div class="obj-ico">💼</div><div><div class="obj-lbl">Actitud</div><p class="obj-txt">Eficaz y eficiente al resolver problemas considerando las variables involucradas.</p></div></div>
+    <div class="obj-card e"><div class="obj-ico">📋</div><div><div class="obj-lbl">Evaluación</div><p class="obj-txt">Actividad formativa grupal con retroalimentación en plenario.</p></div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ HERRAMIENTA: SSMS -->
+<section id="ssms" class="reveal">
+  <span class="eyebrow">// herramienta de trabajo</span>
+  <h2>SQL Server Management Studio (SSMS)</h2>
+  <div class="rule"></div>
+  <div class="def tech">
+    <span class="def-label">🖥️ ¿Qué es SSMS?</span>
+    <p class="def-text"><strong>SQL Server Management Studio</strong> es el entorno gráfico oficial de Microsoft para administrar, configurar y consultar bases de datos SQL Server. Es la herramienta estándar de la industria para DBAs y desarrolladores de bases de datos en empresas que utilizan el ecosistema Microsoft.</p>
+    <span class="def-cite">Disponible gratuitamente en: https://aka.ms/ssmsfullsetup · Versión recomendada: SSMS 19 o superior.</span>
+  </div>
+  <div class="def simple">
+    <span class="def-label">💬 En palabras simples</span>
+    <p class="def-text">SSMS es como el <strong>panel de control</strong> de tu base de datos SQL Server. Desde ahí puedes escribir consultas, ver las tablas, crear índices, depurar errores y mucho más — todo desde una interfaz visual sin necesidad de línea de comandos.</p>
+  </div>
+
+  <h3 style="margin-top:2rem;margin-bottom:1rem">Levantar la Base de Datos TecnoHub — Paso a Paso</h3>
+  <div class="ssms-steps">
+    <div class="ssms-step">
+      <div class="ssms-num">1</div>
+      <div class="ssms-content">
+        <div class="ssms-title">Abrir SSMS y conectarse al servidor</div>
+        <p class="ssms-desc">Ejecuta SSMS desde el menú de inicio. En el cuadro de diálogo <em>"Connect to Server"</em>, configura los siguientes campos:</p>
+        <div style="margin-top:.5rem;display:flex;flex-direction:column;gap:.25rem">
+          <span class="ssms-path">Server type: Database Engine</span>
+          <span class="ssms-path">Server name: localhost  (o el nombre de tu instancia, ej: DESKTOP-ABC\SQLEXPRESS)</span>
+          <span class="ssms-path">Authentication: Windows Authentication  (o SQL Server Authentication con usuario/contraseña)</span>
+        </div>
+        <p class="ssms-note">Si usas SQL Server Express, el nombre suele ser <code>.\SQLEXPRESS</code> o <code>(localdb)\MSSQLLocalDB</code>.</p>
+      </div>
+    </div>
+    <div class="ssms-step">
+      <div class="ssms-num">2</div>
+      <div class="ssms-content">
+        <div class="ssms-title">Abrir una nueva ventana de consulta</div>
+        <p class="ssms-desc">Una vez conectado, haz clic en el botón <em>"New Query"</em> de la barra de herramientas (o usa el atajo <code>Ctrl + N</code>). Se abrirá el editor SQL donde escribirás los scripts.</p>
+        <p class="ssms-note">Verifica que en el selector de base de datos (arriba a la izquierda) aparezca <strong>master</strong> antes de crear la BD.</p>
+      </div>
+    </div>
+    <div class="ssms-step">
+      <div class="ssms-num">3</div>
+      <div class="ssms-content">
+        <div class="ssms-title">Copiar y ejecutar el script de creación</div>
+        <p class="ssms-desc">Copia el script SQL de la sección <em>"Práctica"</em> de esta guía (script completo de TecnoHub). Pégalo en el editor y presiona <code>F5</code> o el botón <em>"Execute"</em>.</p>
+        <p class="ssms-note">Si ves el mensaje <strong>"Commands completed successfully"</strong> en la pestaña Messages, ¡la BD fue creada exitosamente!</p>
+      </div>
+    </div>
+    <div class="ssms-step">
+      <div class="ssms-num">4</div>
+      <div class="ssms-content">
+        <div class="ssms-title">Verificar la estructura en el Object Explorer</div>
+        <p class="ssms-desc">En el panel izquierdo <em>"Object Explorer"</em>, expande <code>Databases → TecnoHubDB → Tables</code>. Deberías ver las tablas: <strong>Productos</strong>, <strong>Clientes</strong> y <strong>Ventas</strong>.</p>
+        <p class="ssms-note">Si no aparece, haz clic derecho en "Databases" y selecciona <em>"Refresh"</em>.</p>
+      </div>
+    </div>
+    <div class="ssms-step">
+      <div class="ssms-num">5</div>
+      <div class="ssms-content">
+        <div class="ssms-title">Seleccionar la base de datos activa</div>
+        <p class="ssms-desc">En el selector desplegable de la barra de herramientas (arriba), selecciona <strong>TecnoHubDB</strong>. A partir de aquí, todas las consultas que ejecutes se dirigirán a esta base de datos.</p>
+        <span class="ssms-path">Alternativa SQL: USE TecnoHubDB;</span>
+      </div>
+    </div>
+    <div class="ssms-step">
+      <div class="ssms-num">6</div>
+      <div class="ssms-content">
+        <div class="ssms-title">Ver el Plan de Ejecución (equivalente a EXPLAIN)</div>
+        <p class="ssms-desc">En SSMS, en lugar de <code>EXPLAIN</code>, usamos el <strong>Plan de Ejecución</strong>. Actívalo con <code>Ctrl + M</code> (Include Actual Execution Plan) antes de ejecutar tu consulta. El plan aparecerá en una nueva pestaña abajo.</p>
+        <p class="ssms-note">Busca el ícono de <em>"Table Scan"</em> (malo) vs <em>"Index Seek"</em> (bueno) en el diagrama del plan.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ CASO REAL -->
+<section id="caso" class="reveal">
+  <span class="eyebrow">// contexto real</span>
+  <h2>El Problema de TecnoHub</h2>
+  <div class="rule"></div>
+  <div class="scenario">
+    <span class="scenario-tag">🏢 Empresa real · Base de datos en producción</span>
+    <h3 class="scenario-title">Millones de transacciones y el sistema se cae</h3>
+    <p style="color:var(--text2);font-size:.9rem;line-height:1.8">TecnoHub registra ventas, productos y clientes. El equipo de TI reporta que las consultas de búsqueda por cliente tardan <mark>varios segundos</mark> en producción — inaceptable.<br/><br/><strong>¿Cómo optimizas las consultas sin cambiar la lógica ni la arquitectura del sistema?</strong></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ CONCEPTO -->
+<section id="concepto" class="reveal">
+  <span class="eyebrow">// concepto central</span>
+  <h2>¿Qué es un Índice?</h2>
+  <div class="rule"></div>
+  <div class="def tech">
+    <span class="def-label">📐 Definición técnica</span>
+    <p class="def-text">Un índice es una <strong>estructura de datos auxiliar</strong> asociada a una tabla que permite al motor del RDBMS localizar filas eficientemente sin recorrer toda la tabla (<em>full table scan</em>). SQL Server implementa estructuras tipo <strong>B-Tree</strong> (árbol balanceado) que mantienen los valores ordenados, reduciendo el costo de búsqueda de <strong>O(n)</strong> a <strong>O(log n)</strong>.</p>
+  </div>
+  <div class="def biblio">
+    <span class="def-label">📖 Cita bibliográfica oficial</span>
+    <p class="def-text">"Un índice permite acelerar la búsqueda de datos en una tabla. Sin índice, el motor debe recorrer todas las filas para encontrar los datos solicitados. Con un índice, el motor puede saltar directamente a la ubicación de los datos relevantes."</p>
+    <span class="def-cite">Godoc, E. (2018). SQL: Los fundamentos del lenguaje (con ejercicios corregidos). Editorial ENI. — Biblioteca Santo Tomás.</span>
+  </div>
+  <div class="def simple">
+    <span class="def-label">💬 En palabras simples</span>
+    <p class="def-text">Imagina un libro de 1.000 páginas sin índice al final: lees página por página para encontrar algo — eso es un <strong>Full Table Scan</strong>. Con el índice del libro vas directo a la página correcta — eso es lo que hace un índice en SQL. <strong>Un índice = atajo para que SQL Server no revise toda la tabla.</strong> 🚀</p>
+  </div>
+  <div class="analogy">
+    <div style="text-align:center"><span class="an-icon">📖</span><div class="an-title">Sin índice (libro)</div><div class="an-desc">Página por página</div></div>
+    <div class="an-arrow">≈</div>
+    <div style="text-align:center"><span class="an-icon">🗄️</span><div class="an-title">Sin índice (tabla)</div><div class="an-desc">Full Table Scan</div></div>
+    <div class="an-arrow">|</div>
+    <div style="text-align:center"><span class="an-icon">📑</span><div class="an-title">Con índice (libro)</div><div class="an-desc">Directo a la página</div></div>
+    <div class="an-arrow">≈</div>
+    <div style="text-align:center"><span class="an-icon">⚡</span><div class="an-title">Con índice (tabla)</div><div class="an-desc">B-Tree: salto directo</div></div>
+  </div>
+
+  <!-- Perf demo -->
+  <div class="perf-demo">
+    <div class="perf-head">Simulación: consulta sobre 1.000.000 de registros</div>
+    <div class="perf-row"><div class="perf-lbl">🐢 Sin índice</div><div class="perf-track"><div class="perf-fill slow" id="bar-slow" data-t="90" data-l="~2.4 s"></div></div></div>
+    <div class="perf-row"><div class="perf-lbl">⚡ Con INDEX</div><div class="perf-track"><div class="perf-fill fast" id="bar-fast" data-t="7" data-l="~0.002 s"></div></div></div>
+    <button class="btn btn-primary" id="run-demo" style="margin-top:.8rem">▶ Simular consulta</button>
+    <p class="perf-msg" id="perf-msg">💡 Un índice puede ser <strong>hasta 1.200× más rápido</strong> en tablas con millones de filas.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ MODELO ER -->
+<section id="er" class="reveal">
+  <span class="eyebrow">// diagrama de la BD</span>
+  <h2>Modelo Entidad-Relación y Simbología</h2>
+  <div class="rule"></div>
+  <p class="lead">Antes de crear índices, debemos entender la estructura de la base de datos. El <strong>Modelo Entidad-Relación (MER)</strong> es el mapa que nos muestra cómo están conectadas las tablas.</p>
+
+  <!-- Diagrama SVG de TecnoHub -->
+  <div class="er-section">
+    <span class="eyebrow" style="margin-bottom:1rem">Diagrama ER — TecnoHubDB</span>
+    <svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;border-radius:8px;background:#f9f8f6;border:1px solid #dddbd6">
+      <!-- Entidad: Productos -->
+      <rect x="20" y="70" width="210" height="210" rx="8" fill="#fff" stroke="#dddbd6" stroke-width="1.5"/>
+      <rect x="20" y="70" width="210" height="36" rx="8" fill="#5a7d6b"/>
+      <rect x="20" y="90" width="210" height="16" fill="#5a7d6b"/>
+      <text x="125" y="94" text-anchor="middle" fill="white" font-family="Lora,serif" font-size="13" font-weight="700">Productos</text>
+      <!-- PK row -->
+      <rect x="20" y="106" width="210" height="1" fill="#dddbd6"/>
+      <text x="36" y="126" fill="#b07d3a" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">🔑 ID_Producto</text>
+      <text x="190" y="126" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT PK</text>
+      <line x1="20" y1="132" x2="230" y2="132" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="36" y="150" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Nombre</text>
+      <text x="190" y="150" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">VARCHAR(255)</text>
+      <line x1="20" y1="156" x2="230" y2="156" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="36" y="174" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Descripcion</text>
+      <text x="190" y="174" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">TEXT</text>
+      <line x1="20" y1="180" x2="230" y2="180" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="36" y="198" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Precio</text>
+      <text x="190" y="198" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT</text>
+      <line x1="20" y1="204" x2="230" y2="204" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="36" y="222" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">CantidadEnStock</text>
+      <text x="190" y="222" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT</text>
+
+      <!-- Entidad: Ventas (centro) -->
+      <rect x="305" y="40" width="210" height="260" rx="8" fill="#fff" stroke="#dddbd6" stroke-width="1.5"/>
+      <rect x="305" y="40" width="210" height="36" rx="8" fill="#3d7a8a"/>
+      <rect x="305" y="60" width="210" height="16" fill="#3d7a8a"/>
+      <text x="410" y="64" text-anchor="middle" fill="white" font-family="Lora,serif" font-size="13" font-weight="700">Ventas</text>
+      <rect x="305" y="76" width="210" height="1" fill="#dddbd6"/>
+      <text x="321" y="96" fill="#b07d3a" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">🔑 ID_Venta</text>
+      <text x="473" y="96" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT PK</text>
+      <line x1="305" y1="102" x2="515" y2="102" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="321" y="122" fill="#6b5c8a" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">🔗 ID_Producto</text>
+      <text x="473" y="122" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT FK</text>
+      <line x1="305" y1="128" x2="515" y2="128" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="321" y="148" fill="#6b5c8a" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">🔗 ID_Cliente</text>
+      <text x="473" y="148" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT FK</text>
+      <line x1="305" y1="154" x2="515" y2="154" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="321" y="174" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Cantidad</text>
+      <text x="473" y="174" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT</text>
+      <line x1="305" y1="180" x2="515" y2="180" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="321" y="200" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Fecha</text>
+      <text x="473" y="200" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">DATE</text>
+
+      <!-- Entidad: Clientes -->
+      <rect x="590" y="70" width="210" height="195" rx="8" fill="#fff" stroke="#dddbd6" stroke-width="1.5"/>
+      <rect x="590" y="70" width="210" height="36" rx="8" fill="#6b5c8a"/>
+      <rect x="590" y="90" width="210" height="16" fill="#6b5c8a"/>
+      <text x="695" y="94" text-anchor="middle" fill="white" font-family="Lora,serif" font-size="13" font-weight="700">Clientes</text>
+      <rect x="590" y="106" width="210" height="1" fill="#dddbd6"/>
+      <text x="606" y="126" fill="#b07d3a" font-family="JetBrains Mono,monospace" font-size="10" font-weight="600">🔑 ID_Cliente</text>
+      <text x="757" y="126" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">INT PK</text>
+      <line x1="590" y1="132" x2="800" y2="132" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="606" y="152" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Nombre</text>
+      <text x="757" y="152" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">VARCHAR(255)</text>
+      <line x1="590" y1="158" x2="800" y2="158" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="606" y="178" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Direccion</text>
+      <text x="757" y="178" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">VARCHAR(255)</text>
+      <line x1="590" y1="184" x2="800" y2="184" stroke="#f0f0ee" stroke-width="1"/>
+      <text x="606" y="204" fill="#514f4a" font-family="JetBrains Mono,monospace" font-size="10">Contacto</text>
+      <text x="757" y="204" text-anchor="end" fill="#89877f" font-family="JetBrains Mono,monospace" font-size="9">VARCHAR(20)</text>
+
+      <!-- Relación: Ventas — Productos (uno a muchos) -->
+      <!-- línea -->
+      <line x1="230" y1="175" x2="305" y2="115" stroke="#5a7d6b" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <!-- cardinalidad "1" del lado Productos -->
+      <text x="240" y="170" fill="#5a7d6b" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">1</text>
+      <!-- cardinalidad "N" del lado Ventas -->
+      <text x="295" y="112" fill="#5a7d6b" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">N</text>
+
+      <!-- Relación: Ventas — Clientes (uno a muchos) -->
+      <line x1="515" y1="115" x2="590" y2="150" stroke="#6b5c8a" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="520" y="112" fill="#6b5c8a" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">N</text>
+      <text x="580" y="148" fill="#6b5c8a" font-family="JetBrains Mono,monospace" font-size="11" font-weight="700">1</text>
+
+      <!-- Labels de relaciones -->
+      <text x="255" y="138" fill="#89877f" font-family="DM Sans,sans-serif" font-size="9" font-style="italic">tiene</text>
+      <text x="535" y="130" fill="#89877f" font-family="DM Sans,sans-serif" font-size="9" font-style="italic">realiza</text>
+
+      <!-- Leyenda -->
+      <rect x="20" y="295" width="780" height="32" rx="6" fill="#f0eeeb"/>
+      <text x="36" y="315" fill="#b07d3a" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">🔑 PK</text>
+      <text x="68" y="315" fill="#89877f" font-family="DM Sans,sans-serif" font-size="9">= Clave Primaria</text>
+      <text x="185" y="315" fill="#6b5c8a" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">🔗 FK</text>
+      <text x="217" y="315" fill="#89877f" font-family="DM Sans,sans-serif" font-size="9">= Clave Foránea</text>
+      <text x="340" y="315" fill="#5a7d6b" font-family="JetBrains Mono,monospace" font-size="9" font-weight="600">1 — N</text>
+      <text x="376" y="315" fill="#89877f" font-family="DM Sans,sans-serif" font-size="9">= Un producto tiene muchas ventas</text>
+      <text x="580" y="315" fill="#89877f" font-family="DM Sans,sans-serif" font-size="9">- - - = Línea de relación</text>
+    </svg>
+  </div>
+
+  <!-- Simbología completa -->
+  <h3 style="margin-top:2rem;margin-bottom:1rem">Simbología completa del Modelo ER</h3>
+  <div class="er-grid">
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><rect x="2" y="2" width="51" height="32" rx="5" fill="#fff" stroke="#5a7d6b" stroke-width="2"/><text x="27" y="22" text-anchor="middle" fill="#5a7d6b" font-family="Lora,serif" font-size="11" font-weight="700">Entidad</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo en uso</span><div class="er-sym-name">Entidad (Tabla)</div><p class="er-sym-desc">Representada con un <strong>rectángulo</strong>. Es un objeto del mundo real con existencia independiente. Ej: <em>Clientes, Productos, Ventas</em>.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><ellipse cx="27" cy="18" rx="24" ry="13" fill="#fff" stroke="#3d7a8a" stroke-width="2"/><text x="27" y="22" text-anchor="middle" fill="#3d7a8a" font-family="Lora,serif" font-size="10">Atributo</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo tradicional</span><div class="er-sym-name">Atributo</div><p class="er-sym-desc">Representado con una <strong>elipse</strong> en el MER clásico (Chen). Es una propiedad de la entidad. Ej: <em>Nombre, Precio, Fecha</em>. En diagramas modernos se listan dentro del rectángulo.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><ellipse cx="27" cy="18" rx="24" ry="13" fill="#fff" stroke="#b07d3a" stroke-width="2.5"/><text x="27" y="22" text-anchor="middle" fill="#b07d3a" font-family="Lora,serif" font-size="10">PK</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo tradicional</span><div class="er-sym-name">Atributo Clave (PK)</div><p class="er-sym-desc">Elipse con <strong>texto subrayado</strong> en notación Chen. Identifica de forma única cada instancia de la entidad. Solo puede haber una PK por tabla.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="40" viewBox="0 0 55 40"><polygon points="27,3 53,20 27,37 1,20" fill="#fff" stroke="#6b5c8a" stroke-width="2"/><text x="27" y="24" text-anchor="middle" fill="#6b5c8a" font-family="Lora,serif" font-size="9">Relación</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo tradicional</span><div class="er-sym-name">Relación (Rombo)</div><p class="er-sym-desc">Representada con un <strong>rombo</strong> en notación Chen. Describe la asociación entre dos entidades. Ej: <em>Clientes REALIZAN Ventas</em>. En diagramas modernos se reemplaza por líneas con cardinalidad.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><line x1="5" y1="18" x2="50" y2="18" stroke="#5a7d6b" stroke-width="2" stroke-dasharray="4,3"/><text x="5" y="14" fill="#5a7d6b" font-family="JetBrains Mono" font-size="10" font-weight="700">1</text><text x="43" y="14" fill="#5a7d6b" font-family="JetBrains Mono" font-size="10" font-weight="700">N</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo en uso</span><div class="er-sym-name">Relación 1 a N</div><p class="er-sym-desc">Un registro de una entidad se relaciona con <strong>múltiples</strong> registros de otra. Ej: un <em>Cliente</em> puede tener <em>muchas Ventas</em>, pero cada Venta pertenece a un solo Cliente.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><line x1="5" y1="18" x2="50" y2="18" stroke="#3d7a8a" stroke-width="2"/><text x="5" y="14" fill="#3d7a8a" font-family="JetBrains Mono" font-size="10" font-weight="700">1</text><text x="43" y="14" fill="#3d7a8a" font-family="JetBrains Mono" font-size="10" font-weight="700">1</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo estándar</span><div class="er-sym-name">Relación 1 a 1</div><p class="er-sym-desc">Un registro se asocia con <strong>exactamente un</strong> registro de otra entidad. Ej: una <em>Persona</em> tiene un <em>único Pasaporte</em>.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><line x1="5" y1="18" x2="50" y2="18" stroke="#9b5c5c" stroke-width="2"/><text x="5" y="14" fill="#9b5c5c" font-family="JetBrains Mono" font-size="10" font-weight="700">N</text><text x="43" y="14" fill="#9b5c5c" font-family="JetBrains Mono" font-size="10" font-weight="700">M</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo estándar</span><div class="er-sym-name">Relación N a M</div><p class="er-sym-desc">Múltiples registros de ambas entidades se relacionan entre sí. Se resuelve con una <strong>tabla intermedia</strong>. Ej: un <em>Estudiante</em> toma <em>muchos Cursos</em>, y un Curso tiene muchos Estudiantes.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><rect x="2" y="6" width="51" height="24" rx="4" fill="none" stroke="#6b5c8a" stroke-width="2" stroke-dasharray="5,3"/><text x="27" y="22" text-anchor="middle" fill="#6b5c8a" font-family="Lora,serif" font-size="9">Entidad</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo adicional</span><div class="er-sym-name">Entidad Débil</div><p class="er-sym-desc">Representada con un <strong>rectángulo de doble borde</strong>. No puede existir sin la entidad fuerte a la que está asociada. Ej: un <em>Ítem de Pedido</em> no existe sin el <em>Pedido</em>.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="40" viewBox="0 0 55 40"><ellipse cx="27" cy="18" rx="24" ry="13" fill="none" stroke="#b07d3a" stroke-width="1.5"/><ellipse cx="27" cy="18" rx="20" ry="9" fill="none" stroke="#b07d3a" stroke-width="1.5"/><text x="27" y="22" text-anchor="middle" fill="#b07d3a" font-family="Lora,serif" font-size="8">Derivado</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo adicional</span><div class="er-sym-name">Atributo Derivado</div><p class="er-sym-desc">Representado con una <strong>elipse de doble borde</strong>. Su valor se calcula a partir de otros atributos. Ej: <em>Edad</em> calculada desde <em>FechaNacimiento</em>.</p></div>
+    </div>
+    <div class="er-symbol">
+      <div class="er-sym-vis">
+        <svg width="55" height="36" viewBox="0 0 55 36"><ellipse cx="27" cy="18" rx="24" ry="13" fill="none" stroke="#5a7d6b" stroke-width="1.5" stroke-dasharray="4,3"/><text x="27" y="22" text-anchor="middle" fill="#5a7d6b" font-family="Lora,serif" font-size="8">{ Mult }</text></svg>
+      </div>
+      <div class="er-sym-info"><span class="er-card-type">Símbolo adicional</span><div class="er-sym-name">Atributo Multivaluado</div><p class="er-sym-desc">Representado con una <strong>elipse de doble línea</strong>. Puede tener múltiples valores. Ej: una persona puede tener varios <em>Teléfonos</em>. En relacional se resuelve con una tabla aparte.</p></div>
+    </div>
+  </div>
+
+  <div class="def tech" style="margin-top:1.5rem">
+    <span class="def-label">📐 Cardinalidad y Participación</span>
+    <p class="def-text">
+      La <strong>cardinalidad</strong> define cuántas instancias de una entidad se relacionan con otra (1:1, 1:N, N:M).<br/>
+      La <strong>participación</strong> puede ser:
+      <br/>• <strong>Total</strong> (línea doble o =): toda entidad participa obligatoriamente. Ej: toda Venta DEBE tener un Cliente.
+      <br/>• <strong>Parcial</strong> (línea simple): la participación es opcional. Ej: un Cliente PUEDE no tener Ventas aún.
+      <br/>En <strong>notación de Crow's Foot</strong> (usada en SSMS y herramientas modernas), los símbolos al final de la línea indican: <code>|</code> = uno, <code>∈</code> = muchos, <code>o</code> = opcional, <code>||</code> = obligatorio.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ TIPOS ÍNDICES -->
+<section id="tipos" class="reveal">
+  <span class="eyebrow">// tipos de índices</span>
+  <h2>Tipos de Índices en SQL Server</h2>
+  <div class="rule"></div>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:1.1rem">Haz clic en cada tipo para ver el detalle.</p>
+  <div class="grid-3" id="idx-grid">
+    <div class="idx-card" data-t="pk"><div class="idx-icon">🔑</div><div class="idx-name">PRIMARY KEY</div><div class="idx-desc">Crea un Clustered Index automáticamente.</div></div>
+    <div class="idx-card" data-t="cl"><div class="idx-icon">🌳</div><div class="idx-name">Clustered Index</div><div class="idx-desc">Ordena físicamente la tabla. Solo 1 por tabla.</div></div>
+    <div class="idx-card" data-t="nc"><div class="idx-icon">📋</div><div class="idx-name">Non-Clustered</div><div class="idx-desc">Estructura separada. Hasta 999 por tabla.</div></div>
+    <div class="idx-card" data-t="uq"><div class="idx-icon">🔒</div><div class="idx-name">UNIQUE</div><div class="idx-desc">Garantiza valores únicos en la columna.</div></div>
+    <div class="idx-card" data-t="cmp"><div class="idx-icon">🧩</div><div class="idx-name">Compuesto</div><div class="idx-desc">Índice sobre 2+ columnas combinadas.</div></div>
+    <div class="idx-card" data-t="fil"><div class="idx-icon">🔍</div><div class="idx-name">Filtered Index</div><div class="idx-desc">Índice parcial con condición WHERE.</div></div>
+  </div>
+  <div class="def tech" id="idx-detail" style="margin-top:1.4rem;display:none">
+    <span class="def-label" id="idx-detail-title">—</span>
+    <p class="def-text" id="idx-detail-body"></p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ PRÁCTICA -->
+<section id="practica" class="reveal">
+  <span class="eyebrow">// laboratorio · SQL Server</span>
+  <h2>Práctica: TecnoHub en SSMS</h2>
+  <div class="rule"></div>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:.5rem">Cada línea de código está explicada. Copia los scripts en SSMS y sigue los pasos en orden.</p>
+
+  <!-- Script BD -->
+  <div class="step-lbl"><div class="step-num">1</div> Crear la base de datos y tablas</div>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span class="code-lbl">T-SQL · Creación de la BD</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><span class="cm">-- Verifica si la BD ya existe; si es así, la elimina para empezar limpio</span>
+<span class="kw">IF</span> <span class="fn">EXISTS</span> (<span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> sys.databases <span class="kw">WHERE</span> name = <span class="str">'TecnoHubDB'</span>)
+    <span class="kw">DROP DATABASE</span> <span class="tbl">TecnoHubDB</span>;
+<span class="cm">-- Crea la base de datos con el nombre indicado</span>
+<span class="kw">CREATE DATABASE</span> <span class="tbl">TecnoHubDB</span>;
+<span class="cm">-- Indica a SQL Server que todas las instrucciones siguientes</span>
+<span class="cm">-- se ejecutarán dentro de esta base de datos</span>
+<span class="kw">USE</span> <span class="tbl">TecnoHubDB</span>;
+<span class="cm">-- GO es un separador de lotes en T-SQL (no es SQL estándar)</span>
+<span class="kw">GO</span>
+
+<span class="cm">-- CREATE TABLE define una nueva tabla con sus columnas y restricciones</span>
+<span class="kw">CREATE TABLE</span> <span class="tbl">Productos</span> (
+    <span class="cm">-- IDENTITY(1,1): autoincremento que comienza en 1 y sube de 1 en 1</span>
+    <span class="cm">-- PRIMARY KEY: esta columna identifica de forma única cada fila</span>
+    ID_Producto  <span class="kw">INT</span> <span class="fn">IDENTITY</span>(<span class="nu">1</span>,<span class="nu">1</span>) <span class="kw">PRIMARY KEY</span>,
+    <span class="cm">-- VARCHAR(255): texto de longitud variable, máximo 255 caracteres</span>
+    <span class="cm">-- NOT NULL: el campo es obligatorio, no puede quedar vacío</span>
+    Nombre       <span class="kw">VARCHAR</span>(<span class="nu">255</span>) <span class="kw">NOT NULL</span>,
+    <span class="cm">-- NVARCHAR(MAX): texto largo (compatible con caracteres Unicode)</span>
+    Descripcion  <span class="kw">NVARCHAR</span>(<span class="kw">MAX</span>),
+    <span class="cm">-- INT: número entero, sin decimales</span>
+    Precio       <span class="kw">INT</span> <span class="kw">NOT NULL</span>,
+    CantidadEnStock <span class="kw">INT</span> <span class="kw">NOT NULL</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">Clientes</span> (
+    ID_Cliente   <span class="kw">INT</span> <span class="fn">IDENTITY</span>(<span class="nu">1</span>,<span class="nu">1</span>) <span class="kw">PRIMARY KEY</span>,
+    Nombre       <span class="kw">VARCHAR</span>(<span class="nu">255</span>) <span class="kw">NOT NULL</span>,
+    Direccion    <span class="kw">VARCHAR</span>(<span class="nu">255</span>) <span class="kw">NOT NULL</span>,
+    <span class="cm">-- Contacto almacena número de teléfono como texto para conservar formatos</span>
+    Contacto     <span class="kw">VARCHAR</span>(<span class="nu">20</span>)  <span class="kw">NOT NULL</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="tbl">Ventas</span> (
+    ID_Venta     <span class="kw">INT</span> <span class="fn">IDENTITY</span>(<span class="nu">1</span>,<span class="nu">1</span>) <span class="kw">PRIMARY KEY</span>,
+    <span class="cm">-- Las FK referencian las PK de las tablas padres</span>
+    ID_Producto  <span class="kw">INT</span> <span class="kw">NOT NULL</span>,
+    ID_Cliente   <span class="kw">INT</span> <span class="kw">NOT NULL</span>,
+    Cantidad     <span class="kw">INT</span> <span class="kw">NOT NULL</span>,
+    <span class="cm">-- DATE almacena solo la fecha (sin hora): YYYY-MM-DD</span>
+    Fecha        <span class="kw">DATE</span> <span class="kw">NOT NULL</span>,
+    <span class="cm">-- CONSTRAINT nombra la restricción para poder referenciarla luego</span>
+    <span class="cm">-- FOREIGN KEY vincula esta columna con la PK de Productos</span>
+    <span class="cm">-- ON DELETE CASCADE: si se elimina un Producto, sus Ventas también se eliminan</span>
+    <span class="kw">CONSTRAINT</span> fk_venta_producto <span class="kw">FOREIGN KEY</span> (ID_Producto)
+        <span class="kw">REFERENCES</span> <span class="tbl">Productos</span>(ID_Producto),
+    <span class="kw">CONSTRAINT</span> fk_venta_cliente  <span class="kw">FOREIGN KEY</span> (ID_Cliente)
+        <span class="kw">REFERENCES</span> <span class="tbl">Clientes</span>(ID_Cliente)
+);</pre>
+  </div>
+
+  <!-- Insert datos -->
+  <div class="step-lbl"><div class="step-num">2</div> Insertar datos de prueba</div>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span class="code-lbl">T-SQL · INSERT INTO</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><span class="cm">-- INSERT INTO especifica la tabla y las columnas que recibirán datos</span>
+<span class="cm">-- VALUES lista los valores en el mismo orden que las columnas declaradas</span>
+<span class="cm">-- No incluimos ID_Producto porque es IDENTITY (se genera automáticamente)</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">Productos</span> (Nombre, Descripcion, Precio, CantidadEnStock)
+<span class="kw">VALUES</span>
+    (<span class="str">'Laptop'</span>,           <span class="str">'Potente computadora portátil'</span>,         <span class="nu">1200</span>, <span class="nu">50</span>),
+    (<span class="str">'Smart TV'</span>,         <span class="str">'Televisor inteligente de última gen.'</span>, <span class="nu">800</span>,  <span class="nu">30</span>),
+    (<span class="str">'Consola de Juegos'</span>,<span class="str">'Consola para videojuegos'</span>,             <span class="nu">400</span>,  <span class="nu">20</span>);
+
+<span class="kw">INSERT INTO</span> <span class="tbl">Clientes</span> (Nombre, Direccion, Contacto)
+<span class="kw">VALUES</span>
+    (<span class="str">'Juan Perez'</span>,   <span class="str">'Calle Principal 123'</span>,    <span class="str">'555-1234'</span>),
+    (<span class="str">'Ana Rodriguez'</span>,<span class="str">'Avenida Secundaria 456'</span>, <span class="str">'555-5678'</span>);
+
+<span class="cm">-- En Ventas sí debemos proporcionar los ID que referencian otras tablas</span>
+<span class="kw">INSERT INTO</span> <span class="tbl">Ventas</span> (ID_Producto, ID_Cliente, Cantidad, Fecha)
+<span class="kw">VALUES</span>
+    (<span class="nu">1</span>, <span class="nu">1</span>, <span class="nu">2</span>, <span class="str">'2024-02-15'</span>), <span class="cm">-- Juan compró 2 Laptops</span>
+    (<span class="nu">2</span>, <span class="nu">2</span>, <span class="nu">1</span>, <span class="str">'2024-03-01'</span>), <span class="cm">-- Ana compró 1 Smart TV</span>
+    (<span class="nu">3</span>, <span class="nu">1</span>, <span class="nu">3</span>, <span class="str">'2024-03-10'</span>); <span class="cm">-- Juan compró 3 Consolas</span></pre>
+  </div>
+
+  <!-- Paso 3: Diagnóstico -->
+  <div class="step-lbl"><div class="step-num">3</div> Detectar el problema con el plan de ejecución</div>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span class="code-lbl">T-SQL · Diagnóstico</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><span class="cm">-- SET STATISTICS TIME ON muestra el tiempo de CPU y tiempo transcurrido</span>
+<span class="cm">-- Activa esto ANTES de ejecutar para medir el rendimiento real</span>
+<span class="kw">SET</span> STATISTICS TIME <span class="kw">ON</span>;
+
+<span class="cm">-- Esta es la consulta "lenta" que queremos optimizar</span>
+<span class="cm">-- SELECT lista las columnas que quieres ver en el resultado</span>
+<span class="kw">SELECT</span>
+    v.ID_Venta,   <span class="cm">-- columna de la tabla Ventas (alias v)</span>
+    c.Nombre,     <span class="cm">-- columna de la tabla Clientes (alias c)</span>
+    p.Nombre,     <span class="cm">-- columna de la tabla Productos (alias p)</span>
+    v.Cantidad,
+    v.Fecha
+<span class="kw">FROM</span>   <span class="tbl">Ventas</span> v               <span class="cm">-- tabla principal, alias v</span>
+<span class="kw">JOIN</span>   <span class="tbl">Clientes</span>  c <span class="kw">ON</span> v.ID_Cliente  = c.ID_Cliente  <span class="cm">-- une Ventas con Clientes</span>
+<span class="kw">JOIN</span>   <span class="tbl">Productos</span> p <span class="kw">ON</span> v.ID_Producto = p.ID_Producto <span class="cm">-- une Ventas con Productos</span>
+<span class="cm">-- WHERE filtra los resultados: solo ventas donde el cliente se llama 'Juan Perez'</span>
+<span class="kw">WHERE</span>  c.Nombre = <span class="str">'Juan Perez'</span>;
+
+<span class="cm">-- Activa Ctrl+M (Include Actual Execution Plan) en SSMS ANTES de ejecutar</span>
+<span class="cm">-- Busca "Table Scan" en el plan → eso indica que no hay índice disponible</span>
+<span class="kw">SET</span> STATISTICS TIME <span class="kw">OFF</span>;</pre>
+  </div>
+
+  <!-- Paso 4: Crear índices -->
+  <div class="step-lbl"><div class="step-num">4</div> Crear los índices apropiados</div>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span class="code-lbl">T-SQL · CREATE INDEX</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><span class="cm">-- CREATE INDEX crea un nuevo índice en la tabla especificada</span>
+<span class="cm">-- El nombre del índice debe ser único dentro de la tabla</span>
+<span class="cm">-- Convención: idx_[tabla]_[columna] facilita el mantenimiento</span>
+
+<span class="cm">-- 1. Índice en Nombre de cliente</span>
+<span class="cm">-- Optimiza: WHERE c.Nombre = 'Juan Perez' (búsqueda exacta por nombre)</span>
+<span class="kw">CREATE INDEX</span> idx_cliente_nombre
+    <span class="kw">ON</span> <span class="tbl">Clientes</span> (Nombre);  <span class="cm">-- columna que se indexará</span>
+
+<span class="cm">-- 2. Non-Clustered Index en la FK ID_Cliente de Ventas</span>
+<span class="cm">-- Optimiza: JOIN ON v.ID_Cliente = c.ID_Cliente</span>
+<span class="kw">CREATE INDEX</span> idx_venta_cliente
+    <span class="kw">ON</span> <span class="tbl">Ventas</span> (ID_Cliente);
+
+<span class="cm">-- 3. Non-Clustered Index en la FK ID_Producto de Ventas</span>
+<span class="cm">-- Optimiza: JOIN ON v.ID_Producto = p.ID_Producto</span>
+<span class="kw">CREATE INDEX</span> idx_venta_producto
+    <span class="kw">ON</span> <span class="tbl">Ventas</span> (ID_Producto);
+
+<span class="cm">-- 4. Índice COMPUESTO sobre dos columnas</span>
+<span class="cm">-- Optimiza: WHERE ID_Cliente = X AND Fecha BETWEEN Y AND Z</span>
+<span class="cm">-- Regla: la columna más selectiva (ID_Cliente) va primero</span>
+<span class="kw">CREATE INDEX</span> idx_venta_cliente_fecha
+    <span class="kw">ON</span> <span class="tbl">Ventas</span> (ID_Cliente, Fecha); <span class="cm">-- ambas columnas en el mismo índice</span></pre>
+  </div>
+
+  <!-- Paso 5: Verificar -->
+  <div class="step-lbl"><div class="step-num">5</div> Verificar la mejora</div>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span class="code-lbl">T-SQL · Verificación</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+    <pre><span class="cm">-- Ejecuta la misma consulta del paso 3 con el plan de ejecución activo</span>
+<span class="cm">-- Ahora deberías ver "Index Seek" en lugar de "Table Scan" ✅</span>
+<span class="kw">SET</span> STATISTICS TIME <span class="kw">ON</span>;
+<span class="kw">SELECT</span> v.ID_Venta, c.Nombre, p.Nombre, v.Cantidad, v.Fecha
+<span class="kw">FROM</span>   <span class="tbl">Ventas</span> v
+<span class="kw">JOIN</span>   <span class="tbl">Clientes</span>  c <span class="kw">ON</span> v.ID_Cliente  = c.ID_Cliente
+<span class="kw">JOIN</span>   <span class="tbl">Productos</span> p <span class="kw">ON</span> v.ID_Producto = p.ID_Producto
+<span class="kw">WHERE</span>  c.Nombre = <span class="str">'Juan Perez'</span>;
+<span class="kw">SET</span> STATISTICS TIME <span class="kw">OFF</span>;
+
+<span class="cm">-- sys.indexes es una vista del sistema que lista todos los índices</span>
+<span class="cm">-- object_id(N'Ventas') convierte el nombre de la tabla a su ID interno</span>
+<span class="kw">SELECT</span>
+    name          <span class="kw">AS</span> NombreIndice,     <span class="cm">-- nombre del índice</span>
+    type_desc     <span class="kw">AS</span> Tipo,             <span class="cm">-- CLUSTERED o NONCLUSTERED</span>
+    is_unique     <span class="kw">AS</span> EsUnico,          <span class="cm">-- 1=sí, 0=no</span>
+    is_primary_key <span class="kw">AS</span> EsPK             <span class="cm">-- 1=es clave primaria</span>
+<span class="kw">FROM</span> sys.indexes
+<span class="kw">WHERE</span> object_id = <span class="fn">OBJECT_ID</span>(<span class="kw">N</span><span class="str">'Ventas'</span>);  <span class="cm">-- filtra solo los de la tabla Ventas</span></pre>
+  </div>
+
+  <div class="card" style="border-left:4px solid var(--amber);margin-top:.5rem">
+    <div class="card-icon">⚠️</div>
+    <div class="card-title">¿Cuándo NO crear un índice?</div>
+    <ul class="checklist" style="margin-top:.5rem">
+      <li>Tablas con pocas filas — el overhead supera el beneficio.</li>
+      <li>Columnas con baja cardinalidad (pocas variantes, ej: un campo booleano).</li>
+      <li>Columnas modificadas muy frecuentemente — cada INSERT/UPDATE recalcula el índice.</li>
+      <li>Exceso de índices → escrituras más lentas y mayor uso de disco.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ QUIZ -->
+<section id="quiz" class="reveal">
+  <span class="eyebrow">// autoevaluación</span>
+  <h2>Quiz — Pon a prueba lo aprendido</h2>
+  <div class="rule"></div>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:1.1rem">4 preguntas · cada acierto suma <strong>+25 XP</strong>.</p>
+  <div class="quiz-wrap">
+    <div class="quiz-q-block" data-q="0" style="display:block">
+      <span class="quiz-num">01 / 04</span>
+      <div class="quiz-q">¿Cuál es la principal ventaja de crear un índice en la columna <code>ID_Cliente</code> de la tabla Ventas?</div>
+      <div class="quiz-opts">
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">A</div>Aumenta el espacio disponible en disco.</div>
+        <div class="quiz-opt" data-ok="true"  onclick="pick(this)"><div class="q-let">B</div>Acelera las consultas JOIN y WHERE que filtran por ese campo.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">C</div>Impide que dos ventas tengan el mismo cliente.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">D</div>Elimina duplicados automáticamente en la columna.</div>
+      </div>
+      <div class="quiz-fb" id="fb0"></div>
+    </div>
+    <div class="quiz-q-block" data-q="1" style="display:none">
+      <span class="quiz-num">02 / 04</span>
+      <div class="quiz-q">En SQL Server, el <strong>Clustered Index</strong> se diferencia del Non-Clustered porque:</div>
+      <div class="quiz-opts">
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">A</div>Es más lento en todas las operaciones de búsqueda.</div>
+        <div class="quiz-opt" data-ok="true"  onclick="pick(this)"><div class="q-let">B</div>Ordena físicamente los datos de la tabla y solo puede haber uno por tabla.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">C</div>Solo funciona con columnas de texto.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">D</div>No lo crea SQL Server automáticamente en ningún caso.</div>
+      </div>
+      <div class="quiz-fb" id="fb1"></div>
+    </div>
+    <div class="quiz-q-block" data-q="2" style="display:none">
+      <span class="quiz-num">03 / 04</span>
+      <div class="quiz-q">En el Plan de Ejecución de SSMS, ¿qué operación indica que la consulta NO está usando un índice?</div>
+      <div class="quiz-opts">
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">A</div>Index Seek.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">B</div>Index Scan.</div>
+        <div class="quiz-opt" data-ok="true"  onclick="pick(this)"><div class="q-let">C</div>Table Scan.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">D</div>Clustered Seek.</div>
+      </div>
+      <div class="quiz-fb" id="fb2"></div>
+    </div>
+    <div class="quiz-q-block" data-q="3" style="display:none">
+      <span class="quiz-num">04 / 04</span>
+      <div class="quiz-q">Un índice compuesto sobre <code>(ID_Cliente, Fecha)</code> es especialmente útil para:</div>
+      <div class="quiz-opts">
+        <div class="quiz-opt" data-ok="true"  onclick="pick(this)"><div class="q-let">A</div>Consultas que filtran por cliente y además filtran u ordenan por fecha.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">B</div>Garantizar que cada cliente tenga solo una venta.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">C</div>Reducir el tamaño físico de la tabla en disco.</div>
+        <div class="quiz-opt" data-ok="false" onclick="pick(this)"><div class="q-let">D</div>Acelerar únicamente las operaciones masivas de inserción.</div>
+      </div>
+      <div class="quiz-fb" id="fb3"></div>
+    </div>
+    <div class="quiz-score" id="quiz-score" style="display:none">
+      <b id="score-val">0 / 4</b><span id="score-msg"></span>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn btn-primary" id="q-next" onclick="qNext()" disabled>Siguiente →</button>
+      <button class="btn btn-ghost" id="q-restart" onclick="qRestart()" style="display:none">↺ Reintentar</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ GLOSARIO -->
+<section id="glosario" class="reveal">
+  <span class="eyebrow">// referencia · estudio</span>
+  <h2>Glosario</h2>
+  <div class="rule"></div>
+  <p style="font-size:.88rem;color:var(--muted);margin-bottom:1.2rem">Palabras reservadas, conceptos técnicos y conocimiento previo necesario para esta clase. Busca, filtra por categoría y haz clic en cada término para expandir su definición.</p>
+
+  <input type="text" class="glosario-search" id="glos-search" placeholder="🔍  Buscar término... (ej: INDEX, JOIN, B-Tree, SSMS)" oninput="filterGlos()"/>
+
+  <div class="glos-cats" id="glos-cats">
+    <div class="glos-cat on" data-cat="all" onclick="setCat(this)">Todos</div>
+    <div class="glos-cat" data-cat="sql" onclick="setCat(this)">SQL / T-SQL</div>
+    <div class="glos-cat" data-cat="concept" onclick="setCat(this)">Conceptos BD</div>
+    <div class="glos-cat" data-cat="prev" onclick="setCat(this)">Conocimiento previo</div>
+    <div class="glos-cat" data-cat="ssms" onclick="setCat(this)">SSMS / SQL Server</div>
+  </div>
+
+  <div class="glos-count" id="glos-count">Mostrando <strong id="glos-n">35</strong> términos</div>
+
+  <div class="glos-grid" id="glos-grid">
+    <!-- Generado por JS -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ FORMULARIO -->
+<section id="formulario" class="reveal">
+  <span class="eyebrow">// recolección de respuestas</span>
+  <h2>Formulario de Actividad</h2>
+  <div class="rule"></div>
+
+  <div class="form-panel">
+    <div class="form-info">
+      <strong>Instrucciones:</strong> Completa el formulario con tus respuestas de la actividad. Los datos se almacenan localmente en esta sesión — el docente puede ver todas las respuestas en la pestaña <em>"Respuestas del docente"</em>.<br/>
+      <span style="color:var(--muted);font-size:.8rem;margin-top:.3rem;display:block">💡 Para recolección externa puedes conectar esto a Google Forms, Airtable o Notion. El docente comparte el link del formulario en el Aula Virtual.</span>
+    </div>
+
+    <div class="form-tabs">
+      <div class="form-tab on" data-pane="alumno" onclick="switchTab(this)">📝 Formulario alumno</div>
+      <div class="form-tab" data-pane="docente" onclick="switchTab(this)">📊 Respuestas (docente)</div>
+      <div class="form-tab" data-pane="gforms" onclick="switchTab(this)">🔗 Instrucciones Google Forms</div>
+    </div>
+
+    <!-- PANE: ALUMNO -->
+    <div class="form-pane on" id="pane-alumno">
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label">Nombre completo *</label>
+          <input class="form-input" id="f-nombre" type="text" placeholder="Ej: María González"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Nombre compañero/a *</label>
+          <input class="form-input" id="f-comp" type="text" placeholder="Ej: Pedro Soto"/>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">¿Qué es un índice en bases de datos? (con tus palabras) *</label>
+        <textarea class="form-textarea" id="f-def" placeholder="Escribe tu definición..."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">¿Qué tipo de índice usarías para optimizar búsquedas por nombre de cliente? Justifica.</label>
+        <textarea class="form-textarea" id="f-tipo" placeholder="Tipo de índice y por qué..."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">¿Cuándo NO recomendarías crear un índice?</label>
+        <textarea class="form-textarea" id="f-cuando" placeholder="Situaciones donde evitarías indexar..."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">¿Qué consulta SQL optimizaste en el laboratorio?</label>
+        <textarea class="form-textarea" id="f-sql" placeholder="Pega o escribe la consulta que optimizaste..."></textarea>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Nivel de comprensión de la actividad</label>
+        <select class="form-select" id="f-nivel">
+          <option value="">-- Selecciona --</option>
+          <option value="alto">✅ Alto — Entendí todo y puedo explicarlo</option>
+          <option value="medio">🟡 Medio — Entiendo el concepto, necesito más práctica</option>
+          <option value="bajo">🔴 Bajo — Necesito repasar antes de la próxima clase</option>
+        </select>
+      </div>
+      <div style="margin-top:1.2rem">
+        <button class="btn btn-primary" onclick="submitForm()">Enviar respuesta ✓</button>
+      </div>
+    </div>
+
+    <!-- PANE: DOCENTE -->
+    <div class="form-pane" id="pane-docente">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <span style="font-size:.85rem;color:var(--text2)">Respuestas recibidas esta sesión: <strong id="resp-count">0</strong></span>
+        <button class="btn btn-ghost" style="font-size:.75rem" onclick="clearResponses()">🗑 Limpiar</button>
+      </div>
+      <div class="responses-area" id="responses-area">
+        <div class="empty-msg">Aún no hay respuestas enviadas.</div>
+      </div>
+    </div>
+
+    <!-- PANE: GOOGLE FORMS -->
+    <div class="form-pane" id="pane-gforms">
+      <h3 style="margin-bottom:1rem;font-size:1rem">Cómo crear el formulario en Google Forms</h3>
+      <div class="ssms-steps">
+        <div class="ssms-step">
+          <div class="ssms-num" style="background:var(--teal)">1</div>
+          <div class="ssms-content">
+            <div class="ssms-title">Ir a Google Forms</div>
+            <p class="ssms-desc">Visita <span class="ssms-path">forms.google.com</span> e inicia sesión con tu cuenta institucional. Haz clic en el botón <strong>"+"</strong> para crear un formulario nuevo.</p>
+          </div>
+        </div>
+        <div class="ssms-step">
+          <div class="ssms-num" style="background:var(--teal)">2</div>
+          <div class="ssms-content">
+            <div class="ssms-title">Agregar las preguntas</div>
+            <p class="ssms-desc">Crea preguntas de tipo <strong>Respuesta corta</strong> para nombre, <strong>Párrafo</strong> para definiciones y justificaciones, y <strong>Opción múltiple</strong> para el nivel de comprensión.</p>
+          </div>
+        </div>
+        <div class="ssms-step">
+          <div class="ssms-num" style="background:var(--teal)">3</div>
+          <div class="ssms-content">
+            <div class="ssms-title">Configurar respuestas</div>
+            <p class="ssms-desc">En la pestaña <em>"Respuestas"</em>, haz clic en el ícono de Google Sheets (tabla verde) para vincular las respuestas a una planilla automáticamente. Así tendrás todas las respuestas organizadas en tiempo real.</p>
+          </div>
+        </div>
+        <div class="ssms-step">
+          <div class="ssms-num" style="background:var(--teal)">4</div>
+          <div class="ssms-content">
+            <div class="ssms-title">Compartir con los alumnos</div>
+            <p class="ssms-desc">Haz clic en el botón <strong>"Enviar"</strong> y copia el enlace. Pégalo en el Aula Virtual o proyéctalo en la pantalla. Los alumnos pueden responder desde su celular o computador.</p>
+            <p class="ssms-note">También puedes generar un código QR desde el mismo Google Forms para que los alumnos lo escaneen.</p>
+          </div>
+        </div>
+        <div class="ssms-step">
+          <div class="ssms-num" style="background:var(--teal)">5</div>
+          <div class="ssms-content">
+            <div class="ssms-title">Alternativas</div>
+            <p class="ssms-desc">Si prefieres otras herramientas: <strong>Mentimeter</strong> (para preguntas interactivas en vivo), <strong>Kahoot</strong> (quiz gamificado), <strong>Padlet</strong> (muro colaborativo) o <strong>Microsoft Forms</strong> (integrado con Teams y OneDrive institucional).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ CIERRE METACOGNITIVO -->
+<section id="cierre" class="reveal">
+  <span class="eyebrow">// cierre metacognitivo</span>
+  <h2>Reflexión Final</h2>
+  <div class="rule"></div>
+  <div class="meta-section">
+    <p style="font-size:.88rem;color:var(--text2);line-height:1.75;margin-bottom:1.8rem">La metacognición es pensar sobre tu propio aprendizaje: <em>¿qué entendí?, ¿qué me costó?, ¿cómo lo aplicaría?</em> Tomarte 5 minutos consolida lo aprendido y te hace un profesional más consciente de tu proceso.</p>
+    <div class="meta-grid">
+      <div class="meta-card">
+        <div class="meta-card-title">💡 ¿Qué aprendí hoy?</div>
+        <textarea class="meta-ta" id="m1" placeholder="Escribe con tus propias palabras los conceptos clave que te llevas..."></textarea>
+      </div>
+      <div class="meta-card">
+        <div class="meta-card-title">🤔 ¿Qué aún no me queda claro?</div>
+        <textarea class="meta-ta" id="m2" placeholder="Identifica un concepto o ejercicio donde todavía tienes dudas..."></textarea>
+      </div>
+      <div class="meta-card">
+        <div class="meta-card-title">🏗️ ¿Cómo aplicaría esto en un proyecto real?</div>
+        <textarea class="meta-ta" id="m3" placeholder="¿En qué base de datos que conozcas crearías índices y por qué?"></textarea>
+      </div>
+      <div class="meta-card">
+        <div class="meta-card-title">🚦 ¿Cómo salgo de esta clase?</div>
+        <div class="semaforo">
+          <div class="sem-opt" onclick="pickSem(this)"><div class="sem-dot dot-g"></div><span>Verde — Entendí todo, puedo explicarlo</span></div>
+          <div class="sem-opt" onclick="pickSem(this)"><div class="sem-dot dot-y"></div><span>Amarillo — Entiendo el concepto, necesito práctica</span></div>
+          <div class="sem-opt" onclick="pickSem(this)"><div class="sem-dot dot-r"></div><span>Rojo — Estoy confundido/a, necesito repaso</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="meta-card" style="margin-bottom:1rem">
+      <div class="meta-card-title">⭐ ¿Qué tan útil fue esta sesión?</div>
+      <div class="stars" id="stars">
+        <button class="star-btn" onclick="rateStar(1)">★</button>
+        <button class="star-btn" onclick="rateStar(2)">★</button>
+        <button class="star-btn" onclick="rateStar(3)">★</button>
+        <button class="star-btn" onclick="rateStar(4)">★</button>
+        <button class="star-btn" onclick="rateStar(5)">★</button>
+      </div>
+    </div>
+    <div style="text-align:center">
+      <button class="btn btn-primary" onclick="submitMeta()">Completar reflexión ✓</button>
+    </div>
+    <div id="meta-done" style="display:none;text-align:center;margin-top:1.2rem;padding:1.4rem;background:var(--sage-dim);border:1px solid var(--sage-lt);border-radius:10px">
+      <div style="font-family:var(--font-head);font-weight:700;font-size:1.05rem;color:var(--sage);margin-bottom:.35rem">¡Reflexión registrada! 🌱</div>
+      <p style="font-size:.86rem;color:var(--text2)">Tomarte este tiempo es una habilidad profesional. Los mejores ingenieros no solo saben hacer cosas — saben <em>cómo aprenden</em>.<br/><strong>Nos vemos la próxima semana con Autoincremento y Vistas. ☕</strong></p>
+    </div>
+  </div>
+</section>
+
+<footer>IEI-088 · Diseño de Bases de Datos · Semana 01 &nbsp;|&nbsp; Santo Tomás &nbsp;|&nbsp; Godoc (2018) · Capacho & Nieto (2017)</footer>
+
+<!-- ═══════════════════════════════ SCRIPTS -->
+<script>
+// ── PROGRESS ──────────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  document.getElementById('progress').style.width=
+    (window.scrollY/(document.body.offsetHeight-window.innerHeight)*100)+'%';
+});
+
+// ── REVEAL ────────────────────────────────────────────
+const ro=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in')}),{threshold:.07});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// ── NAV HAMBURGER ─────────────────────────────────────
+function toggleDrawer(){
+  const burger=document.getElementById('nav-burger');
+  const drawer=document.getElementById('nav-drawer');
+  const overlay=document.getElementById('nav-overlay');
+  const isOpen=drawer.classList.contains('open');
+  if(isOpen){ closeDrawer(); } else { openDrawer(); }
+}
+function openDrawer(){
+  document.getElementById('nav-burger').classList.add('open');
+  document.getElementById('nav-drawer').classList.add('open');
+  document.getElementById('nav-overlay').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  document.getElementById('nav-burger').classList.remove('open');
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.getElementById('nav-overlay').classList.remove('on');
+  document.body.style.overflow='';
+}
+// Cierra drawer con Escape
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrawer(); });
+// Cierra drawer al redimensionar a desktop
+window.addEventListener('resize',()=>{ if(window.innerWidth>780) closeDrawer(); });
+
+// ── NAV ACTIVE (desktop + drawer) ─────────────────────
+const secs=[...document.querySelectorAll('section[id]')];
+const desktopLinks=[...document.querySelectorAll('.nav-links a')];
+const drawerLinks=[...document.querySelectorAll('.drawer-link')];
+function updateNav(){
+  let cur='';
+  secs.forEach(s=>{ if(window.scrollY>=s.offsetTop-160) cur=s.id; });
+  desktopLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur));
+  drawerLinks.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+cur));
+}
+window.addEventListener('scroll', updateNav, {passive:true});
+updateNav();
+
+// ── NAV SHADOW ON SCROLL ──────────────────────────────
+window.addEventListener('scroll',()=>{
+  document.getElementById('main-nav').style.boxShadow=
+    window.scrollY>10 ? '0 2px 20px rgba(44,43,40,.08)' : 'none';
+},{passive:true});
+
+// ── XP ────────────────────────────────────────────────
+let xp=0,toastTmr;
+function addXP(n,msg){
+  xp+=n;
+  document.getElementById('xp-display').textContent=xp;
+  // sincronizar counter del drawer móvil
+  const mob=document.getElementById('xp-display-mob');
+  if(mob) mob.textContent=xp;
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent='+'+n+' XP — '+msg;
+  t.classList.add('on');clearTimeout(toastTmr);
+  toastTmr=setTimeout(()=>t.classList.remove('on'),2400);
+}
+const secXP={};
+document.querySelectorAll('section[id]').forEach(s=>{
+  new IntersectionObserver(e=>e.forEach(x=>{
+    if(x.isIntersecting&&!secXP[x.target.id]&&x.target.id!=='hero'){
+      secXP[x.target.id]=1;addXP(10,'Sección explorada');
+    }
+  }),{threshold:.25}).observe(s);
+});
+
+// ── OBJ CHECKS ────────────────────────────────────────
+function checkObj(el){
+  el.classList.toggle('done');
+  if(el.classList.contains('done')){el.textContent='✓';addXP(5,'Objetivo marcado');}
+  else el.textContent='';
+}
+
+// ── PERF DEMO ─────────────────────────────────────────
+document.getElementById('run-demo').addEventListener('click',function(){
+  const s=document.getElementById('bar-slow'),f=document.getElementById('bar-fast');
+  s.style.width='0%';f.style.width='0%';s.textContent='';f.textContent='';
+  document.getElementById('perf-msg').style.display='none';
+  setTimeout(()=>{
+    s.style.width=s.dataset.t+'%';s.textContent=s.dataset.l;
+    setTimeout(()=>{
+      f.style.width=f.dataset.t+'%';f.textContent=f.dataset.l;
+      document.getElementById('perf-msg').style.display='block';
+      addXP(15,'Demo ejecutado');
+    },400);
+  },80);
+});
+
+// ── INDEX CARDS ───────────────────────────────────────
+const idxInfo={
+  pk:  ['🔑 PRIMARY KEY','En SQL Server, la PRIMARY KEY crea automáticamente un Clustered Index sobre la columna. No permite valores NULL ni duplicados. Es el índice más eficiente para búsquedas por identificador único.'],
+  cl:  ['🌳 Clustered Index','Ordena físicamente los datos de la tabla según los valores de la columna indexada. Solo puede haber 1 por tabla (ya que los datos solo pueden estar físicamente ordenados de una forma). La PRIMARY KEY crea este índice por defecto. Las búsquedas por rango son muy eficientes.'],
+  nc:  ['📋 Non-Clustered Index','Crea una estructura B-Tree separada de los datos reales. Contiene los valores indexados y punteros a las filas correspondientes. Se pueden crear hasta 999 por tabla. Son los índices que crearás con CREATE INDEX.'],
+  uq:  ['🔒 UNIQUE Index','Garantiza que no existan dos filas con el mismo valor en la columna indexada. Puedes crearlo con CREATE UNIQUE INDEX. Útil para emails, RUT, códigos únicos de negocio.'],
+  cmp: ['🧩 Índice Compuesto','Se define sobre dos o más columnas. Ejemplo: CREATE INDEX idx ON Ventas(ID_Cliente, Fecha). Eficiente para consultas que filtran por ambas columnas. El orden importa: la columna más selectiva (con más valores únicos) debe ir primero.'],
+  fil: ['🔍 Filtered Index','Índice creado con una cláusula WHERE: CREATE INDEX idx ON Tabla(Col) WHERE Estado = \'Activo\'. Solo indexa las filas que cumplen la condición, reduciendo el tamaño y mejorando el rendimiento para ese subconjunto de datos.']
+};
+document.querySelectorAll('.idx-card').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.idx-card').forEach(x=>x.classList.remove('on'));
+    c.classList.add('on');
+    const [t,b]=idxInfo[c.dataset.t];
+    document.getElementById('idx-detail-title').textContent=t;
+    document.getElementById('idx-detail-body').textContent=b;
+    document.getElementById('idx-detail').style.display='block';
+    addXP(5,'Tipo explorado');
+  });
+});
+
+// ── COPY CODE ─────────────────────────────────────────
+function copyCode(btn){
+  const txt=btn.closest('.code-wrap').querySelector('pre').innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    btn.textContent='✓ Copiado';
+    setTimeout(()=>btn.textContent='Copiar',2000);
+    addXP(5,'Código copiado');
+  });
+}
+
+// ── QUIZ ──────────────────────────────────────────────
+let qCur=0,qScore=0,qDone=false;
+const qFb=[
+  '✅ Correcto. Los índices aceleran búsquedas y JOINs al reducir las filas que el motor examina.',
+  '❌ No. El beneficio principal es la velocidad de lectura. La unicidad la daría un UNIQUE INDEX.',
+  '✅ Correcto. El Clustered Index ordena físicamente la tabla; solo puede haber uno, normalmente la PK.',
+  '❌ Incorrecto. El Clustered Index es muy eficiente para búsquedas. Recuerda: la PK lo crea automáticamente.',
+  '✅ Correcto. "Table Scan" en el plan de ejecución significa que SQL Server recorrió toda la tabla.',
+  '❌ Incorrecto. Index Seek es la operación ideal (usa el índice). Table Scan es la problemática.',
+  '✅ Correcto. El índice compuesto (ID_Cliente, Fecha) es ideal para consultas tipo "ventas de X cliente en marzo".',
+  '❌ Incorrecto. Para garantizar unicidad se usa UNIQUE INDEX. El índice compuesto es para rendimiento en filtros combinados.'
+];
+function pick(el){
+  if(qDone)return;qDone=true;
+  const opts=el.closest('.quiz-opts').querySelectorAll('.quiz-opt');
+  opts.forEach(o=>{o.classList.add('off');o.onclick=null});
+  const ok=el.dataset.ok==='true';
+  el.classList.add(ok?'ok':'err');
+  if(!ok)opts.forEach(o=>{if(o.dataset.ok==='true')o.classList.add('ok')});
+  const fb=document.getElementById('fb'+qCur);
+  fb.textContent=qFb[qCur*2+(ok?0:1)];
+  fb.className='quiz-fb show '+(ok?'ok':'err');
+  if(ok){qScore++;addXP(25,'¡Respuesta correcta!');}
+  document.getElementById('q-next').disabled=false;
+}
+function qNext(){
+  document.querySelectorAll('.quiz-q-block')[qCur].style.display='none';
+  qCur++;
+  if(qCur<4){
+    document.querySelectorAll('.quiz-q-block')[qCur].style.display='block';
+    qDone=false;document.getElementById('q-next').disabled=true;
+    if(qCur===3)document.getElementById('q-next').textContent='Finalizar ✓';
+  } else {
+    document.getElementById('quiz-score').style.display='block';
+    document.getElementById('score-val').textContent=qScore+' / 4 correctas';
+    const msgs=['Sigue repasando, ¡la práctica consolida!','Buen avance, revisa las incorrectas.','Muy bien, dominas los fundamentos.','¡Perfecto! Listo para la práctica.'];
+    document.getElementById('score-msg').textContent=' — '+msgs[qScore]||msgs[3];
+    document.getElementById('q-next').style.display='none';
+    document.getElementById('q-restart').style.display='inline-flex';
+    if(qScore===4)addXP(50,'¡Quiz perfecto!');
+  }
+}
+function qRestart(){
+  qCur=0;qScore=0;qDone=false;
+  document.querySelectorAll('.quiz-q-block').forEach((b,i)=>{
+    b.style.display=i===0?'block':'none';
+    b.querySelectorAll('.quiz-opt').forEach(o=>{o.className='quiz-opt';o.onclick=function(){pick(this)};});
+    document.getElementById('fb'+i).className='quiz-fb';document.getElementById('fb'+i).textContent='';
+  });
+  document.getElementById('quiz-score').style.display='none';
+  document.getElementById('q-next').textContent='Siguiente →';
+  document.getElementById('q-next').style.display='inline-block';
+  document.getElementById('q-next').disabled=true;
+  document.getElementById('q-restart').style.display='none';
+}
+
+// ── GLOSARIO DATA ─────────────────────────────────────
+const glosData=[
+  {term:'INDEX',cat:'sql',tech:'Estructura de datos auxiliar asociada a una tabla que permite localizar filas eficientemente. En T-SQL: CREATE INDEX nombre ON tabla(columna).',simple:'Un atajo que SQL Server usa para no revisar toda la tabla al buscar datos.'},
+  {term:'CREATE INDEX',cat:'sql',tech:'Sentencia DDL que crea un nuevo índice no agrupado (Non-Clustered) sobre una columna de una tabla existente.',simple:'El comando que le dice a SQL Server: "crea un atajo para buscar por esta columna".'},
+  {term:'DROP INDEX',cat:'sql',tech:'Sentencia DDL que elimina un índice existente. En T-SQL: DROP INDEX tabla.nombre_indice.',simple:'El comando para borrar un índice que ya no necesitas.'},
+  {term:'SELECT',cat:'sql',tech:'Sentencia DML que recupera filas de una o más tablas. Define las columnas del resultado, el origen de datos y las condiciones de filtrado.',simple:'Le dice a SQL Server: "dame estos datos de esta tabla".'},
+  {term:'FROM',cat:'sql',tech:'Cláusula de SELECT que especifica la tabla o vista de origen de los datos a consultar.',simple:'El "de dónde" de una consulta: ¿de qué tabla sacamos los datos?'},
+  {term:'WHERE',cat:'sql',tech:'Cláusula que filtra filas según una condición booleana. Se evalúa antes del GROUP BY y el HAVING.',simple:'Un filtro: "solo dame las filas donde esta condición sea verdadera".'},
+  {term:'JOIN',cat:'sql',tech:'Combina filas de dos o más tablas basándose en una condición de igualdad o comparación entre columnas relacionadas.',simple:'Une dos tablas para ver sus datos combinados, como juntar dos listas.'},
+  {term:'INNER JOIN',cat:'sql',tech:'Retorna solo las filas que tienen correspondencia en ambas tablas según la condición ON. Las filas sin coincidencia son excluidas.',simple:'Solo muestra los datos que existen en AMBAS tablas al mismo tiempo.'},
+  {term:'LEFT JOIN',cat:'sql',tech:'Retorna todas las filas de la tabla izquierda y las filas coincidentes de la tabla derecha. Si no hay coincidencia, los campos de la derecha quedan como NULL.',simple:'Muestra todos los datos de la primera tabla, aunque no tengan pareja en la segunda.'},
+  {term:'ON',cat:'sql',tech:'Cláusula del JOIN que especifica la condición de unión entre dos tablas, generalmente la igualdad entre una FK y la PK correspondiente.',simple:'La "regla" del JOIN: ¿por qué columna se unen las dos tablas?'},
+  {term:'CREATE TABLE',cat:'sql',tech:'Sentencia DDL que define una nueva tabla, sus columnas, tipos de datos y restricciones (PRIMARY KEY, FOREIGN KEY, NOT NULL, etc.).',simple:'El comando para crear una tabla nueva con todas sus columnas y reglas.'},
+  {term:'INSERT INTO',cat:'sql',tech:'Sentencia DML que agrega una o más filas de datos a una tabla existente.',simple:'El comando para agregar datos (filas) a una tabla.'},
+  {term:'PRIMARY KEY',cat:'sql',tech:'Restricción que identifica de forma única cada fila de una tabla. No permite valores NULL ni duplicados. Crea automáticamente un Clustered Index en SQL Server.',simple:'La columna (o columnas) que identifican de forma única cada fila. Como el RUT de una persona.'},
+  {term:'FOREIGN KEY',cat:'sql',tech:'Restricción de integridad referencial que vincula una columna con la PRIMARY KEY de otra tabla. Evita huérfanos y garantiza consistencia.',simple:'Una columna que apunta a la clave primaria de otra tabla. Crea el "puente" entre tablas.'},
+  {term:'NOT NULL',cat:'sql',tech:'Restricción de columna que impide insertar filas con valor nulo en esa columna. Garantiza que el campo siempre tenga un valor.',simple:'Le dice a SQL Server que ese campo es obligatorio: no puede quedar vacío.'},
+  {term:'IDENTITY',cat:'sql',tech:'Propiedad de columna en T-SQL que genera automáticamente valores numéricos incrementales. IDENTITY(semilla, incremento). Equivalente a AUTO_INCREMENT en MySQL.',simple:'Un contador automático: SQL Server pone el número solo, tú no tienes que ingresarlo.'},
+  {term:'USE',cat:'sql',tech:'Sentencia T-SQL que establece la base de datos activa para la sesión actual. Todas las consultas siguientes se ejecutarán en esa BD.',simple:'Le dice a SQL Server: "a partir de ahora, trabaja en esta base de datos".'},
+  {term:'GO',cat:'sql',tech:'Separador de lotes en T-SQL (no es una instrucción SQL estándar). Le indica al cliente (SSMS) que envíe las instrucciones anteriores como un lote de ejecución.',simple:'Un "punto y aparte" especial en SSMS: separa grupos de instrucciones que se ejecutan juntas.'},
+  {term:'CONSTRAINT',cat:'sql',tech:'Palabra clave para asignar un nombre explícito a una restricción (PK, FK, UNIQUE, CHECK). Facilita su referencia posterior para modificarla o eliminarla.',simple:'Un nombre para una regla de tu tabla, para poder identificarla y cambiarla después.'},
+  {term:'SET STATISTICS TIME ON',cat:'sql',tech:'Comando T-SQL que activa la medición de tiempo de CPU y tiempo transcurrido de cada consulta. Útil para comparar el rendimiento antes y después de crear índices.',simple:'Le pide a SQL Server que mida y muestre cuánto tiempo tardó en ejecutar la consulta.'},
+  {term:'sys.indexes',cat:'sql',tech:'Vista del catálogo del sistema en SQL Server que contiene una fila por cada índice de cada objeto (tabla, vista). Permite consultar información sobre los índices existentes.',simple:'Una tabla especial de SQL Server donde puedes ver todos los índices que existen en tu BD.'},
+  {term:'OBJECT_ID()',cat:'sql',tech:'Función del sistema en T-SQL que devuelve el identificador interno de un objeto de base de datos a partir de su nombre. Se usa en consultas al catálogo del sistema.',simple:'Una función que convierte el nombre de una tabla a su número de identificación interno.'},
+  {term:'Clustered Index',cat:'concept',tech:'Tipo de índice que ordena físicamente las páginas de datos de la tabla según los valores de la columna indexada. Solo puede existir uno por tabla. La PK lo crea por defecto.',simple:'Organiza los datos de la tabla como un archivador ordenado físicamente. Solo hay 1 por tabla.'},
+  {term:'Non-Clustered Index',cat:'concept',tech:'Índice que crea una estructura B-Tree separada de los datos reales, con punteros a las filas. No afecta el orden físico de la tabla. Máximo 999 por tabla en SQL Server.',simple:'Un índice aparte que tiene sus propios "apuntes" con referencias a dónde están los datos reales.'},
+  {term:'B-Tree',cat:'concept',tech:'Árbol Balanceado (Balanced Tree). Estructura de datos en la que todos los nodos hoja están a la misma profundidad. Permite búsquedas, inserciones y eliminaciones en O(log n). Es la base de la mayoría de índices en RDBMS.',simple:'La estructura interna del índice: como un árbol de decisión donde cada nivel reduce a la mitad las opciones, hasta llegar al dato exacto.'},
+  {term:'Full Table Scan',cat:'concept',tech:'Operación en la que el motor de base de datos recorre secuencialmente todas las filas de una tabla para satisfacer una consulta. Tiene costo O(n). Visible como "Table Scan" en el plan de ejecución de SSMS.',simple:'Cuando SQL Server no tiene atajos y revisa TODAS las filas de la tabla, una por una.'},
+  {term:'Cardinalidad',cat:'concept',tech:'En el contexto de índices: número de valores únicos en una columna respecto al total de filas. Alta cardinalidad = muchos valores únicos = candidato ideal para índice. En MER: define las relaciones 1:1, 1:N, N:M.',simple:'Qué tan "variados" son los valores de una columna. Alta cardinalidad = muchos valores diferentes.'},
+  {term:'Modelo ER',cat:'concept',tech:'Modelo Entidad-Relación. Representación conceptual de los datos y sus relaciones, independiente del motor de base de datos. Usa entidades, atributos, relaciones y cardinalidades.',simple:'El "plano arquitectónico" de una base de datos: un diagrama que muestra qué tablas hay y cómo se conectan.'},
+  {term:'Entidad',cat:'concept',tech:'Objeto del mundo real con existencia propia que es relevante para el sistema. Se representa con un rectángulo en el MER. Corresponde a una tabla en el modelo relacional.',simple:'Una "cosa" del mundo real que queremos almacenar en la BD. Ej: Cliente, Producto, Venta.'},
+  {term:'Atributo',cat:'concept',tech:'Propiedad o característica de una entidad. Se representa con una elipse en la notación Chen. Corresponde a una columna en el modelo relacional.',simple:'Una característica de una entidad. Si Clientes es la entidad, Nombre y Dirección son atributos.'},
+  {term:'Relación 1:N',cat:'concept',tech:'Relación en la que una instancia de la entidad A se asocia con muchas instancias de la entidad B, pero cada instancia de B se asocia con solo una de A.',simple:'Un cliente puede tener muchas ventas, pero cada venta pertenece a un solo cliente.'},
+  {term:'Relación N:M',cat:'concept',tech:'Relación en la que múltiples instancias de A se asocian con múltiples instancias de B. Se resuelve en el modelo relacional creando una tabla intermedia (asociativa).',simple:'Muchos estudiantes toman muchos cursos. Para guardar esto se crea una tabla intermedia.'},
+  {term:'RDBMS',cat:'prev',tech:'Relational Database Management System. Sistema de gestión de bases de datos relacionales. Implementa el modelo relacional de Codd. Ejemplos: SQL Server, MySQL, PostgreSQL, Oracle.',simple:'El "motor" de base de datos. El software que administra y organiza los datos en tablas relacionadas.'},
+  {term:'DDL',cat:'prev',tech:'Data Definition Language. Subconjunto de SQL para definir y modificar la estructura de la BD. Incluye: CREATE, ALTER, DROP, TRUNCATE.',simple:'Los comandos SQL que crean o modifican la estructura de la BD (tablas, índices, etc.).'},
+  {term:'DML',cat:'prev',tech:'Data Manipulation Language. Subconjunto de SQL para manipular datos. Incluye: SELECT, INSERT, UPDATE, DELETE.',simple:'Los comandos SQL que trabajan con los datos dentro de las tablas.'},
+  {term:'Plan de Ejecución',cat:'ssms',tech:'Representación gráfica o textual de los pasos que el motor de SQL Server seguirá para ejecutar una consulta. Muestra operadores como Table Scan, Index Seek, Nested Loops, Hash Join. Se activa con Ctrl+M en SSMS.',simple:'El "mapa de ruta" que SQL Server usará para responder tu consulta. Te dice si usó índices o no.'},
+  {term:'Index Seek',cat:'ssms',tech:'Operación del plan de ejecución de SQL Server que indica que el motor usó un índice B-Tree para acceder directamente a un subconjunto de filas. Es la operación más eficiente.',simple:'¡Buena señal! Significa que SQL Server encontró un índice y lo usó para ir directo a los datos.'},
+  {term:'Table Scan',cat:'ssms',tech:'Operación del plan de ejecución que indica que el motor recorrió toda la tabla (Full Table Scan) sin usar ningún índice. Es la operación menos eficiente en tablas grandes.',simple:'Señal de alerta: SQL Server tuvo que revisar TODAS las filas porque no había índice disponible.'},
+  {term:'SSMS',cat:'ssms',tech:'SQL Server Management Studio. Entorno gráfico integrado de Microsoft para administrar instancias de SQL Server. Incluye editor de consultas, Object Explorer, monitor de actividad y herramientas de diagnóstico.',simple:'La interfaz visual para trabajar con SQL Server. Desde aquí escribes consultas, ves tablas y creas índices.'},
+  {term:'Object Explorer',cat:'ssms',tech:'Panel lateral de SSMS que muestra una vista jerárquica de todos los objetos del servidor: bases de datos, tablas, vistas, índices, procedimientos almacenados, etc.',simple:'El panel de la izquierda en SSMS donde puedes explorar todas tus bases de datos y tablas visualmente.'},
+];
+
+let currentCat='all',currentSearch='';
+function renderGlos(){
+  const q=currentSearch.toLowerCase();
+  const filtered=glosData.filter(g=>{
+    const matchCat=currentCat==='all'||g.cat===currentCat;
+    const matchSearch=!q||g.term.toLowerCase().includes(q)||g.tech.toLowerCase().includes(q)||g.simple.toLowerCase().includes(q);
+    return matchCat&&matchSearch;
+  });
+  document.getElementById('glos-n').textContent=filtered.length;
+  const grid=document.getElementById('glos-grid');
+  if(filtered.length===0){grid.innerHTML='<div class="empty-msg" style="padding:2rem;text-align:center;color:var(--muted)">No se encontraron términos con esa búsqueda.</div>';return;}
+  grid.innerHTML=filtered.map(g=>{
+    const tagClass={'sql':'gt-sql','concept':'gt-concept','prev':'gt-prev','ssms':'gt-ssms'}[g.cat];
+    const tagLabel={'sql':'SQL / T-SQL','concept':'Concepto BD','prev':'Conocimiento previo','ssms':'SSMS'}[g.cat];
+    return `<div class="glos-item" onclick="toggleGlos(this)">
+      <div class="glos-header">
+        <span class="glos-term">${g.term}</span>
+        <span class="glos-tag ${tagClass}">${tagLabel}</span>
+        <span class="glos-arrow">▾</span>
+      </div>
+      <div class="glos-body">
+        <p class="glos-tech">${g.tech}</p>
+        <p class="glos-simple">💬 ${g.simple}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleGlos(el){
+  const wasOpen=el.classList.contains('open');
+  document.querySelectorAll('.glos-item.open').forEach(x=>x.classList.remove('open'));
+  if(!wasOpen){el.classList.add('open');addXP(2,'Término consultado');}
+}
+function filterGlos(){currentSearch=document.getElementById('glos-search').value;renderGlos();}
+function setCat(el){
+  document.querySelectorAll('.glos-cat').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');currentCat=el.dataset.cat;renderGlos();
+}
+renderGlos();
+
+// ── FORMULARIO ────────────────────────────────────────
+let responses=[];
+function switchTab(el){
+  document.querySelectorAll('.form-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.form-pane').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('pane-'+el.dataset.pane).classList.add('on');
+}
+function submitForm(){
+  const nombre=document.getElementById('f-nombre').value.trim();
+  const def=document.getElementById('f-def').value.trim();
+  if(!nombre||!def){alert('Por favor completa al menos tu nombre y la definición de índice.');return;}
+  const resp={
+    nombre,comp:document.getElementById('f-comp').value.trim(),
+    def,tipo:document.getElementById('f-tipo').value.trim(),
+    cuando:document.getElementById('f-cuando').value.trim(),
+    sql:document.getElementById('f-sql').value.trim(),
+    nivel:document.getElementById('f-nivel').value,
+    time:new Date().toLocaleTimeString()
+  };
+  responses.push(resp);renderResponses();
+  document.getElementById('f-nombre').value='';document.getElementById('f-comp').value='';
+  document.getElementById('f-def').value='';document.getElementById('f-tipo').value='';
+  document.getElementById('f-cuando').value='';document.getElementById('f-sql').value='';
+  document.getElementById('f-nivel').value='';
+  addXP(30,'¡Actividad enviada!');
+  alert('✅ Respuesta enviada correctamente.');
+}
+function renderResponses(){
+  const area=document.getElementById('responses-area');
+  document.getElementById('resp-count').textContent=responses.length;
+  if(responses.length===0){area.innerHTML='<div class="empty-msg">Aún no hay respuestas enviadas.</div>';return;}
+  const nivelLabel={'alto':'🟢 Alto','medio':'🟡 Medio','bajo':'🔴 Bajo'};
+  area.innerHTML=responses.map((r,i)=>`
+    <div class="response-item">
+      <div class="resp-meta"><span>#${i+1} · ${r.time}</span><span>${nivelLabel[r.nivel]||'—'}</span></div>
+      <div class="resp-name">${r.nombre}${r.comp?' &amp; '+r.comp:''}</div>
+      <div class="resp-data">
+        <strong>Definición:</strong> ${r.def||'—'}<br/>
+        ${r.tipo?'<strong>Tipo elegido:</strong> '+r.tipo+'<br/>':''}
+        ${r.cuando?'<strong>Cuándo no indexar:</strong> '+r.cuando+'<br/>':''}
+        ${r.sql?'<strong>SQL optimizado:</strong> <code style="font-family:var(--font-code);font-size:.78rem">'+r.sql+'</code>':''}
+      </div>
+    </div>`).join('');
+}
+function clearResponses(){if(confirm('¿Limpiar todas las respuestas?')){responses=[];renderResponses();}}
+
+// ── METACOGNICIÓN ─────────────────────────────────────
+function pickSem(el){
+  document.querySelectorAll('.sem-opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');addXP(10,'Semáforo registrado');
+}
+function rateStar(v){
+  document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('lit',i<v));
+}
+function submitMeta(){
+  const filled=[...document.querySelectorAll('.meta-ta')].filter(a=>a.value.trim().length>5).length;
+  if(filled<1){alert('Completa al menos una reflexión antes de continuar.');return;}
+  document.getElementById('meta-done').style.display='block';
+  document.querySelector('.meta-section button').style.display='none';
+  addXP(40,'Reflexión metacognitiva completada');
+  setTimeout(()=>document.getElementById('meta-done').scrollIntoView({behavior:'smooth',block:'center'}),200);
+}
+</script>
+</body>
+</html>
