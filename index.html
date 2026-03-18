@@ -7,15 +7,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg:#f5f4f0; --surface:#edecea; --card:#ffffff; --card2:#f9f8f6;
-      --border:#dddbd6; --border2:#c8c5be;
-      --text:#2c2b28; --text2:#514f4a; --muted:#89877f;
-      --sage:#5a7d6b; --sage-lt:#d4e4db; --sage-dim:rgba(90,125,107,.1);
-      --teal:#3d7a8a; --teal-lt:#cce2e8;
-      --amber:#b07d3a; --amber-lt:#f0e2c8;
-      --rose:#9b5c5c; --rose-lt:#f0d8d8;
-      --plum:#6b5c8a; --plum-lt:#e0d8f0;
-      --code-bg:#1e2228; --code-txt:#d4d0c8;
+      /* ── Tema oscuro cálido — reduce fatiga visual ── */
+      --bg:#1a1c1e; --surface:#22252a; --card:#272b30; --card2:#2e323a;
+      --border:#353a42; --border2:#454c57;
+      --text:#e8e4dc; --text2:#b0aaA0; --muted:#6b6760;
+      --sage:#6aaa8a; --sage-lt:rgba(106,170,138,.18); --sage-dim:rgba(106,170,138,.08);
+      --teal:#5badbe; --teal-lt:rgba(91,173,190,.18);
+      --amber:#d4944a; --amber-lt:rgba(212,148,74,.15);
+      --rose:#c47a7a; --rose-lt:rgba(196,122,122,.15);
+      --plum:#9b82c4; --plum-lt:rgba(155,130,196,.15);
+      --code-bg:#131619; --code-txt:#cdd0d6;
       --font-head:'Lora',Georgia,serif;
       --font-body:'DM Sans',sans-serif;
       --font-code:'JetBrains Mono',monospace;
@@ -25,8 +26,8 @@
     html{scroll-behavior:smooth;font-size:17px}
     body{background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.75;overflow-x:hidden}
     body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-      background-image:radial-gradient(ellipse 80% 50% at 10% 20%,rgba(90,125,107,.06) 0%,transparent 60%),
-      radial-gradient(ellipse 60% 40% at 90% 80%,rgba(61,122,138,.05) 0%,transparent 55%)}
+      background-image:radial-gradient(ellipse 80% 50% at 10% 20%,rgba(106,170,138,.04) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%,rgba(91,173,190,.03) 0%,transparent 55%)}
 
     /* ── PROGRESS ── */
     #progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--sage),var(--teal));width:0%;z-index:300;transition:width .1s}
@@ -36,10 +37,9 @@
     ════════════════════════════════════════ */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-      background: rgba(245,244,240,.96);
+      background: rgba(26,28,30,.97);
       backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      /* altura fija para alinear todo */
       height: 56px;
     }
     .nav-inner {
@@ -111,7 +111,7 @@
     /* Drawer móvil */
     .nav-drawer {
       position: fixed; top: 56px; left: 0; right: 0; z-index: 190;
-      background: rgba(245,244,240,.98);
+      background: rgba(26,28,30,.98);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       padding: 0; max-height: 0; overflow: hidden;
@@ -457,7 +457,7 @@
       <a href="#practica">Práctica</a>
       <a href="#quiz">Quiz</a>
       <a href="#glosario">Glosario</a>
-      <a href="#formulario">Formulario</a>
+      <a href="#resumen">Resumen</a>
       <a href="#cierre">Cierre</a>
     </div>
 
@@ -482,7 +482,7 @@
     <a href="#practica"  class="drawer-link" onclick="closeDrawer()"><span class="d-icon">⚗️</span>Práctica</a>
     <a href="#quiz"      class="drawer-link" onclick="closeDrawer()"><span class="d-icon">🧩</span>Quiz</a>
     <a href="#glosario"  class="drawer-link" onclick="closeDrawer()"><span class="d-icon">📚</span>Glosario</a>
-    <a href="#formulario"class="drawer-link" onclick="closeDrawer()"><span class="d-icon">📝</span>Formulario</a>
+    <a href="#resumen"   class="drawer-link" onclick="closeDrawer()"><span class="d-icon">✅</span>Resumen</a>
     <a href="#cierre"    class="drawer-link" onclick="closeDrawer()"><span class="d-icon">🧠</span>Cierre</a>
   </div>
   <div class="drawer-divider"></div>
@@ -1117,167 +1117,82 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════ FORMULARIO -->
-<section id="formulario" class="reveal">
-  <span class="eyebrow">// recolección de respuestas</span>
-  <h2>Formulario de Actividad</h2>
+<!-- ═══════════════════════════════ RESUMEN OBJETIVOS -->
+<section id="resumen" class="reveal">
+  <span class="eyebrow">// verificación de logros</span>
+  <h2>¿Logramos los Objetivos?</h2>
   <div class="rule"></div>
+  <p class="lead" style="margin-bottom:1.8rem">Revisemos juntos lo que trabajamos hoy y verifiquemos cada objetivo declarado al inicio de la clase.</p>
 
-  <div class="form-panel">
-    <div class="form-info">
-      <strong>Instrucciones:</strong> Completa el formulario con tus respuestas de la actividad. Los datos se almacenan localmente en esta sesión — el docente puede ver todas las respuestas en la pestaña <em>"Respuestas del docente"</em>.<br/>
-      <span style="color:var(--muted);font-size:.8rem;margin-top:.3rem;display:block">💡 Para recolección externa puedes conectar esto a Google Forms, Airtable o Notion. El docente comparte el link del formulario en el Aula Virtual.</span>
-    </div>
+  <div id="obj-summary"></div>
 
-    <div class="form-tabs">
-      <div class="form-tab on" data-pane="alumno" onclick="switchTab(this)">📝 Formulario alumno</div>
-      <div class="form-tab" data-pane="docente" onclick="switchTab(this)">📊 Respuestas (docente)</div>
-      <div class="form-tab" data-pane="gforms" onclick="switchTab(this)">🔗 Instrucciones Google Forms</div>
-    </div>
-
-    <!-- PANE: ALUMNO -->
-    <div class="form-pane on" id="pane-alumno">
-      <div class="form-row">
-        <div class="form-field">
-          <label class="form-label">Nombre completo *</label>
-          <input class="form-input" id="f-nombre" type="text" placeholder="Ej: María González"/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Nombre compañero/a *</label>
-          <input class="form-input" id="f-comp" type="text" placeholder="Ej: Pedro Soto"/>
-        </div>
-      </div>
-      <div class="form-field">
-        <label class="form-label">¿Qué es un índice en bases de datos? (con tus palabras) *</label>
-        <textarea class="form-textarea" id="f-def" placeholder="Escribe tu definición..."></textarea>
-      </div>
-      <div class="form-field">
-        <label class="form-label">¿Qué tipo de índice usarías para optimizar búsquedas por nombre de cliente? Justifica.</label>
-        <textarea class="form-textarea" id="f-tipo" placeholder="Tipo de índice y por qué..."></textarea>
-      </div>
-      <div class="form-field">
-        <label class="form-label">¿Cuándo NO recomendarías crear un índice?</label>
-        <textarea class="form-textarea" id="f-cuando" placeholder="Situaciones donde evitarías indexar..."></textarea>
-      </div>
-      <div class="form-field">
-        <label class="form-label">¿Qué consulta SQL optimizaste en el laboratorio?</label>
-        <textarea class="form-textarea" id="f-sql" placeholder="Pega o escribe la consulta que optimizaste..."></textarea>
-      </div>
-      <div class="form-field">
-        <label class="form-label">Nivel de comprensión de la actividad</label>
-        <select class="form-select" id="f-nivel">
-          <option value="">-- Selecciona --</option>
-          <option value="alto">✅ Alto — Entendí todo y puedo explicarlo</option>
-          <option value="medio">🟡 Medio — Entiendo el concepto, necesito más práctica</option>
-          <option value="bajo">🔴 Bajo — Necesito repasar antes de la próxima clase</option>
-        </select>
-      </div>
-      <div style="margin-top:1.2rem">
-        <button class="btn btn-primary" onclick="submitForm()">Enviar respuesta ✓</button>
-      </div>
-    </div>
-
-    <!-- PANE: DOCENTE -->
-    <div class="form-pane" id="pane-docente">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-        <span style="font-size:.85rem;color:var(--text2)">Respuestas recibidas esta sesión: <strong id="resp-count">0</strong></span>
-        <button class="btn btn-ghost" style="font-size:.75rem" onclick="clearResponses()">🗑 Limpiar</button>
-      </div>
-      <div class="responses-area" id="responses-area">
-        <div class="empty-msg">Aún no hay respuestas enviadas.</div>
-      </div>
-    </div>
-
-    <!-- PANE: GOOGLE FORMS -->
-    <div class="form-pane" id="pane-gforms">
-      <h3 style="margin-bottom:1rem;font-size:1rem">Cómo crear el formulario en Google Forms</h3>
-      <div class="ssms-steps">
-        <div class="ssms-step">
-          <div class="ssms-num" style="background:var(--teal)">1</div>
-          <div class="ssms-content">
-            <div class="ssms-title">Ir a Google Forms</div>
-            <p class="ssms-desc">Visita <span class="ssms-path">forms.google.com</span> e inicia sesión con tu cuenta institucional. Haz clic en el botón <strong>"+"</strong> para crear un formulario nuevo.</p>
-          </div>
-        </div>
-        <div class="ssms-step">
-          <div class="ssms-num" style="background:var(--teal)">2</div>
-          <div class="ssms-content">
-            <div class="ssms-title">Agregar las preguntas</div>
-            <p class="ssms-desc">Crea preguntas de tipo <strong>Respuesta corta</strong> para nombre, <strong>Párrafo</strong> para definiciones y justificaciones, y <strong>Opción múltiple</strong> para el nivel de comprensión.</p>
-          </div>
-        </div>
-        <div class="ssms-step">
-          <div class="ssms-num" style="background:var(--teal)">3</div>
-          <div class="ssms-content">
-            <div class="ssms-title">Configurar respuestas</div>
-            <p class="ssms-desc">En la pestaña <em>"Respuestas"</em>, haz clic en el ícono de Google Sheets (tabla verde) para vincular las respuestas a una planilla automáticamente. Así tendrás todas las respuestas organizadas en tiempo real.</p>
-          </div>
-        </div>
-        <div class="ssms-step">
-          <div class="ssms-num" style="background:var(--teal)">4</div>
-          <div class="ssms-content">
-            <div class="ssms-title">Compartir con los alumnos</div>
-            <p class="ssms-desc">Haz clic en el botón <strong>"Enviar"</strong> y copia el enlace. Pégalo en el Aula Virtual o proyéctalo en la pantalla. Los alumnos pueden responder desde su celular o computador.</p>
-            <p class="ssms-note">También puedes generar un código QR desde el mismo Google Forms para que los alumnos lo escaneen.</p>
-          </div>
-        </div>
-        <div class="ssms-step">
-          <div class="ssms-num" style="background:var(--teal)">5</div>
-          <div class="ssms-content">
-            <div class="ssms-title">Alternativas</div>
-            <p class="ssms-desc">Si prefieres otras herramientas: <strong>Mentimeter</strong> (para preguntas interactivas en vivo), <strong>Kahoot</strong> (quiz gamificado), <strong>Padlet</strong> (muro colaborativo) o <strong>Microsoft Forms</strong> (integrado con Teams y OneDrive institucional).</p>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Próxima semana -->
+  <div style="margin-top:2rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem 1.8rem;border-left:4px solid var(--teal)">
+    <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:.5rem">📅 Próxima sesión — Semana 02</div>
+    <div style="font-family:var(--font-head);font-weight:600;font-size:1rem;color:var(--text);margin-bottom:.4rem">Actividad 1.2 — Autoincremento y Vistas</div>
+    <p style="font-size:.88rem;color:var(--text2);margin:0">Crearemos vistas para simplificar la obtención de datos complejos y usaremos campos autoincrementables para garantizar la unicidad de claves primarias.</p>
   </div>
 </section>
 
-<!-- ═══════════════════════════════ CIERRE METACOGNITIVO -->
+<!-- ═══════════════════════════════ CIERRE PLENARIO -->
 <section id="cierre" class="reveal">
-  <span class="eyebrow">// cierre metacognitivo</span>
-  <h2>Reflexión Final</h2>
+  <span class="eyebrow">// cierre metacognitivo · plenario</span>
+  <h2>Reflexión en Plenario</h2>
   <div class="rule"></div>
-  <div class="meta-section">
-    <p style="font-size:.88rem;color:var(--text2);line-height:1.75;margin-bottom:1.8rem">La metacognición es pensar sobre tu propio aprendizaje: <em>¿qué entendí?, ¿qué me costó?, ¿cómo lo aplicaría?</em> Tomarte 5 minutos consolida lo aprendido y te hace un profesional más consciente de tu proceso.</p>
-    <div class="meta-grid">
-      <div class="meta-card">
-        <div class="meta-card-title">💡 ¿Qué aprendí hoy?</div>
-        <textarea class="meta-ta" id="m1" placeholder="Escribe con tus propias palabras los conceptos clave que te llevas..."></textarea>
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;border-top:4px solid var(--sage)">
+
+    <p style="font-size:.9rem;color:var(--text2);line-height:1.8;margin-bottom:2rem">
+      Cerramos la clase reflexionando en conjunto. No hay respuestas correctas o incorrectas —
+      el objetivo es pensar sobre lo que aprendimos hoy.
+    </p>
+
+    <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:2rem">
+
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;border-left:4px solid var(--sage)">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sage);margin-bottom:.5rem">01 — Consolidación</div>
+        <div style="font-family:var(--font-head);font-weight:600;font-size:1.1rem;color:var(--text)">¿Qué es un índice y para qué sirve?</div>
       </div>
-      <div class="meta-card">
-        <div class="meta-card-title">🤔 ¿Qué aún no me queda claro?</div>
-        <textarea class="meta-ta" id="m2" placeholder="Identifica un concepto o ejercicio donde todavía tienes dudas..."></textarea>
+
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;border-left:4px solid var(--teal)">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:.5rem">02 — Aplicación</div>
+        <div style="font-family:var(--font-head);font-weight:600;font-size:1.1rem;color:var(--text)">¿En qué parte de TecnoHub aplicarías un índice y por qué?</div>
       </div>
-      <div class="meta-card">
-        <div class="meta-card-title">🏗️ ¿Cómo aplicaría esto en un proyecto real?</div>
-        <textarea class="meta-ta" id="m3" placeholder="¿En qué base de datos que conozcas crearías índices y por qué?"></textarea>
+
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;border-left:4px solid var(--amber)">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem">03 — Pensamiento crítico</div>
+        <div style="font-family:var(--font-head);font-weight:600;font-size:1.1rem;color:var(--text)">¿Cuándo NO crearías un índice? ¿Cuál es el riesgo de tener demasiados?</div>
       </div>
-      <div class="meta-card">
-        <div class="meta-card-title">🚦 ¿Cómo salgo de esta clase?</div>
-        <div class="semaforo">
-          <div class="sem-opt" onclick="pickSem(this)"><div class="sem-dot dot-g"></div><span>Verde — Entendí todo, puedo explicarlo</span></div>
-          <div class="sem-opt" onclick="pickSem(this)"><div class="sem-dot dot-y"></div><span>Amarillo — Entiendo el concepto, necesito práctica</span></div>
-          <div class="sem-opt" onclick="pickSem(this)"><div class="sem-dot dot-r"></div><span>Rojo — Estoy confundido/a, necesito repaso</span></div>
+
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem 1.5rem;border-left:4px solid var(--plum)">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--plum);margin-bottom:.5rem">04 — Metacognición</div>
+        <div style="font-family:var(--font-head);font-weight:600;font-size:1.1rem;color:var(--text)">¿Qué fue lo más difícil de entender hoy?</div>
+      </div>
+
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.6rem;margin-bottom:1.5rem">
+      <div style="font-family:var(--font-head);font-weight:600;font-size:.95rem;color:var(--text);margin-bottom:1rem">🚦 Semáforo — ¿Cómo salgo de esta clase?</div>
+      <div style="display:flex;flex-direction:column;gap:.6rem">
+        <div style="display:flex;align-items:center;gap:.8rem;padding:.65rem 1rem;background:rgba(106,170,138,.08);border:1px solid rgba(106,170,138,.2);border-radius:8px">
+          <div style="width:14px;height:14px;border-radius:50%;background:var(--sage);flex-shrink:0"></div>
+          <span style="font-size:.9rem;color:var(--text2)"><strong style="color:var(--text)">Verde</strong> — Entendí todo, puedo explicárselo a alguien más</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.8rem;padding:.65rem 1rem;background:rgba(212,148,74,.07);border:1px solid rgba(212,148,74,.2);border-radius:8px">
+          <div style="width:14px;height:14px;border-radius:50%;background:var(--amber);flex-shrink:0"></div>
+          <span style="font-size:.9rem;color:var(--text2)"><strong style="color:var(--text)">Amarillo</strong> — Entiendo el concepto, necesito más práctica</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.8rem;padding:.65rem 1rem;background:rgba(196,122,122,.07);border:1px solid rgba(196,122,122,.2);border-radius:8px">
+          <div style="width:14px;height:14px;border-radius:50%;background:var(--rose);flex-shrink:0"></div>
+          <span style="font-size:.9rem;color:var(--text2)"><strong style="color:var(--text)">Rojo</strong> — Necesito repaso antes de la próxima clase</span>
         </div>
       </div>
     </div>
-    <div class="meta-card" style="margin-bottom:1rem">
-      <div class="meta-card-title">⭐ ¿Qué tan útil fue esta sesión?</div>
-      <div class="stars" id="stars">
-        <button class="star-btn" onclick="rateStar(1)">★</button>
-        <button class="star-btn" onclick="rateStar(2)">★</button>
-        <button class="star-btn" onclick="rateStar(3)">★</button>
-        <button class="star-btn" onclick="rateStar(4)">★</button>
-        <button class="star-btn" onclick="rateStar(5)">★</button>
-      </div>
-    </div>
-    <div style="text-align:center">
-      <button class="btn btn-primary" onclick="submitMeta()">Completar reflexión ✓</button>
-    </div>
-    <div id="meta-done" style="display:none;text-align:center;margin-top:1.2rem;padding:1.4rem;background:var(--sage-dim);border:1px solid var(--sage-lt);border-radius:10px">
-      <div style="font-family:var(--font-head);font-weight:700;font-size:1.05rem;color:var(--sage);margin-bottom:.35rem">¡Reflexión registrada! 🌱</div>
-      <p style="font-size:.86rem;color:var(--text2)">Tomarte este tiempo es una habilidad profesional. Los mejores ingenieros no solo saben hacer cosas — saben <em>cómo aprenden</em>.<br/><strong>Nos vemos la próxima semana con Autoincremento y Vistas. ☕</strong></p>
+
+    <div style="text-align:center;padding:1.4rem;background:var(--sage-dim);border:1px solid var(--sage-lt);border-radius:10px">
+      <div style="font-family:var(--font-head);font-weight:700;font-size:1.1rem;color:var(--sage);margin-bottom:.4rem">¡Muy buen trabajo hoy! 🌱</div>
+      <p style="font-size:.88rem;color:var(--text2);margin:0">Los mejores ingenieros no solo ejecutan código — saben <em>por qué</em> funciona y cuándo aplicarlo.<br/>
+      <strong style="color:var(--text)">Nos vemos la próxima semana con Autoincremento y Vistas. ☕</strong></p>
     </div>
   </div>
 </section>
@@ -1554,69 +1469,55 @@ function setCat(el){
 }
 renderGlos();
 
-// ── FORMULARIO ────────────────────────────────────────
-let responses=[];
-function switchTab(el){
-  document.querySelectorAll('.form-tab').forEach(t=>t.classList.remove('on'));
-  document.querySelectorAll('.form-pane').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-  document.getElementById('pane-'+el.dataset.pane).classList.add('on');
-}
-function submitForm(){
-  const nombre=document.getElementById('f-nombre').value.trim();
-  const def=document.getElementById('f-def').value.trim();
-  if(!nombre||!def){alert('Por favor completa al menos tu nombre y la definición de índice.');return;}
-  const resp={
-    nombre,comp:document.getElementById('f-comp').value.trim(),
-    def,tipo:document.getElementById('f-tipo').value.trim(),
-    cuando:document.getElementById('f-cuando').value.trim(),
-    sql:document.getElementById('f-sql').value.trim(),
-    nivel:document.getElementById('f-nivel').value,
-    time:new Date().toLocaleTimeString()
-  };
-  responses.push(resp);renderResponses();
-  document.getElementById('f-nombre').value='';document.getElementById('f-comp').value='';
-  document.getElementById('f-def').value='';document.getElementById('f-tipo').value='';
-  document.getElementById('f-cuando').value='';document.getElementById('f-sql').value='';
-  document.getElementById('f-nivel').value='';
-  addXP(30,'¡Actividad enviada!');
-  alert('✅ Respuesta enviada correctamente.');
-}
-function renderResponses(){
-  const area=document.getElementById('responses-area');
-  document.getElementById('resp-count').textContent=responses.length;
-  if(responses.length===0){area.innerHTML='<div class="empty-msg">Aún no hay respuestas enviadas.</div>';return;}
-  const nivelLabel={'alto':'🟢 Alto','medio':'🟡 Medio','bajo':'🔴 Bajo'};
-  area.innerHTML=responses.map((r,i)=>`
-    <div class="response-item">
-      <div class="resp-meta"><span>#${i+1} · ${r.time}</span><span>${nivelLabel[r.nivel]||'—'}</span></div>
-      <div class="resp-name">${r.nombre}${r.comp?' &amp; '+r.comp:''}</div>
-      <div class="resp-data">
-        <strong>Definición:</strong> ${r.def||'—'}<br/>
-        ${r.tipo?'<strong>Tipo elegido:</strong> '+r.tipo+'<br/>':''}
-        ${r.cuando?'<strong>Cuándo no indexar:</strong> '+r.cuando+'<br/>':''}
-        ${r.sql?'<strong>SQL optimizado:</strong> <code style="font-family:var(--font-code);font-size:.78rem">'+r.sql+'</code>':''}
-      </div>
-    </div>`).join('');
-}
-function clearResponses(){if(confirm('¿Limpiar todas las respuestas?')){responses=[];renderResponses();}}
+// ── RESUMEN OBJETIVOS ─────────────────────────────────
+const objData = [
+  {
+    title: 'Definir qué es un índice y explicar su funcionamiento (B-Tree)',
+    cubierto: true,
+    detalle: 'Vimos la definición técnica, la cita de Godoc (2018), la analogía del libro y la estructura B-Tree que reduce la búsqueda de O(n) a O(log n). El demo de rendimiento ilustró el impacto real.'
+  },
+  {
+    title: 'Identificar cuándo una consulta se beneficia de un índice',
+    cubierto: true,
+    detalle: 'Practicamos con SET STATISTICS TIME ON y el Plan de Ejecución de SSMS (Ctrl+M). Comparamos Table Scan vs Index Seek en la consulta de TecnoHub.'
+  },
+  {
+    title: 'Distinguir los tipos de índices disponibles en SQL Server',
+    cubierto: true,
+    detalle: 'Exploramos 6 tipos: PRIMARY KEY (Clustered), Non-Clustered, UNIQUE, Compuesto, Filtered y FOREIGN KEY. Cada uno con su caso de uso específico.'
+  },
+  {
+    title: 'Crear índices apropiados según requerimientos del cliente',
+    cubierto: true,
+    detalle: 'Implementamos 4 índices sobre TecnoHubDB: idx_cliente_nombre, idx_venta_cliente, idx_venta_producto e idx_venta_cliente_fecha (compuesto).'
+  },
+  {
+    title: 'Evaluar cuándo un índice ayuda y cuándo genera overhead',
+    cubierto: true,
+    detalle: 'Analizamos los 4 escenarios donde NO conviene indexar: tablas pequeñas, baja cardinalidad, columnas de alta escritura y exceso de índices.'
+  }
+];
 
-// ── METACOGNICIÓN ─────────────────────────────────────
-function pickSem(el){
-  document.querySelectorAll('.sem-opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');addXP(10,'Semáforo registrado');
+function buildObjSummary(){
+  const wrap = document.getElementById('obj-summary');
+  if(!wrap) return;
+  wrap.innerHTML = objData.map((o,i) => `
+    <div style="background:var(--card);border:1px solid ${o.cubierto?'rgba(106,170,138,.3)':'rgba(196,122,122,.3)'};border-radius:var(--r);padding:1.2rem 1.4rem;margin-bottom:.8rem;display:flex;gap:1rem;align-items:flex-start">
+      <div style="width:32px;height:32px;border-radius:50%;background:${o.cubierto?'var(--sage)':'var(--rose)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.85rem">
+        ${o.cubierto?'✓':'✗'}
+      </div>
+      <div style="flex:1">
+        <div style="font-family:var(--font-head);font-weight:600;font-size:.95rem;color:var(--text);margin-bottom:.3rem">${o.title}</div>
+        <div style="font-size:.83rem;color:var(--text2);line-height:1.65">
+          <span style="font-size:.63rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${o.cubierto?'var(--sage)':'var(--rose)'};margin-right:.4rem">${o.cubierto?'✅ Cubierto':'❌ Pendiente'}</span>
+          — ${o.detalle}
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
-function rateStar(v){
-  document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('lit',i<v));
-}
-function submitMeta(){
-  const filled=[...document.querySelectorAll('.meta-ta')].filter(a=>a.value.trim().length>5).length;
-  if(filled<1){alert('Completa al menos una reflexión antes de continuar.');return;}
-  document.getElementById('meta-done').style.display='block';
-  document.querySelector('.meta-section button').style.display='none';
-  addXP(40,'Reflexión metacognitiva completada');
-  setTimeout(()=>document.getElementById('meta-done').scrollIntoView({behavior:'smooth',block:'center'}),200);
-}
+buildObjSummary();
+
 </script>
 </body>
 </html>
