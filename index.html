@@ -843,10 +843,7 @@
     <div class="idx-card" data-t="cmp"><div class="idx-icon">🧩</div><div class="idx-name">Compuesto</div><div class="idx-desc">Índice sobre 2+ columnas combinadas.</div></div>
     <div class="idx-card" data-t="fil"><div class="idx-icon">🔍</div><div class="idx-name">Filtered Index</div><div class="idx-desc">Índice parcial con condición WHERE.</div></div>
   </div>
-  <div class="def tech" id="idx-detail" style="margin-top:1.4rem;display:none">
-    <span class="def-label" id="idx-detail-title">—</span>
-    <p class="def-text" id="idx-detail-body"></p>
-  </div>
+  <div id="idx-detail" style="margin-top:1.4rem;display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.6rem"></div>
 </section>
 
 <!-- ═══════════════════════════════ PRÁCTICA -->
@@ -1301,21 +1298,83 @@ document.getElementById('run-demo').addEventListener('click',function(){
 
 // ── INDEX CARDS ───────────────────────────────────────
 const idxInfo={
-  pk:  ['🔑 PRIMARY KEY','En SQL Server, la PRIMARY KEY crea automáticamente un Clustered Index sobre la columna. No permite valores NULL ni duplicados. Es el índice más eficiente para búsquedas por identificador único.'],
-  cl:  ['🌳 Clustered Index','Ordena físicamente los datos de la tabla según los valores de la columna indexada. Solo puede haber 1 por tabla (ya que los datos solo pueden estar físicamente ordenados de una forma). La PRIMARY KEY crea este índice por defecto. Las búsquedas por rango son muy eficientes.'],
-  nc:  ['📋 Non-Clustered Index','Crea una estructura B-Tree separada de los datos reales. Contiene los valores indexados y punteros a las filas correspondientes. Se pueden crear hasta 999 por tabla. Son los índices que crearás con CREATE INDEX.'],
-  uq:  ['🔒 UNIQUE Index','Garantiza que no existan dos filas con el mismo valor en la columna indexada. Puedes crearlo con CREATE UNIQUE INDEX. Útil para emails, RUT, códigos únicos de negocio.'],
-  cmp: ['🧩 Índice Compuesto','Se define sobre dos o más columnas. Ejemplo: CREATE INDEX idx ON Ventas(ID_Cliente, Fecha). Eficiente para consultas que filtran por ambas columnas. El orden importa: la columna más selectiva (con más valores únicos) debe ir primero.'],
-  fil: ['🔍 Filtered Index','Índice creado con una cláusula WHERE: CREATE INDEX idx ON Tabla(Col) WHERE Estado = \'Activo\'. Solo indexa las filas que cumplen la condición, reduciendo el tamaño y mejorando el rendimiento para ese subconjunto de datos.']
+  pk:{
+    tech:'En SQL Server, declarar PRIMARY KEY crea automáticamente un <strong>Clustered Index</strong> sobre esa columna. No permite valores NULL ni duplicados. Es el punto de acceso más eficiente para búsquedas por identificador único, con costo O(log n).',
+    simple:'Es la etiqueta única de cada fila — como el RUT de una persona. SQL Server crea un índice sobre ella automáticamente, así que nunca necesitas crear uno manual encima.',
+    ejemplo_prof:'En el sistema bancario de BancoEstado, la tabla <code>Cuentas</code> tiene como PK el campo <code>NumeroCuenta</code>. Cuando un cajero busca una cuenta específica, SQL Server la encuentra en microsegundos gracias al Clustered Index que la PK generó automáticamente.',
+    sql_prof:'-- Sistema bancario: PK genera Clustered Index automáticamente\nCREATE TABLE Cuentas (\n    NumeroCuenta  CHAR(20)       PRIMARY KEY,  -- Clustered Index aquí\n    RUT_Titular   VARCHAR(12)    NOT NULL,\n    Saldo         DECIMAL(18,2)  NOT NULL,\n    TipoCuenta    VARCHAR(20)    NOT NULL\n);',
+    ejemplo_bd:'En TecnoHubDB, <code>ID_Producto</code>, <code>ID_Cliente</code> e <code>ID_Venta</code> son PKs. SQL Server ya creó un Clustered Index en cada una. No necesitas hacer nada adicional — están listos para búsquedas por ID.',
+    sql_bd:'-- TecnoHub: verificar que la PK ya tiene su índice\nSELECT name, type_desc, is_primary_key\nFROM sys.indexes\nWHERE object_id = OBJECT_ID(N\'Productos\');\n-- Resultado esperado: PK_Productos | CLUSTERED | 1'
+  },
+  cl:{
+    tech:'El <strong>Clustered Index</strong> determina el <em>orden físico</em> de las páginas de datos de la tabla en disco. Solo puede existir uno por tabla, ya que los datos solo pueden estar ordenados de una forma. Las búsquedas por rango (<code>BETWEEN</code>, <code>&lt;</code>, <code>&gt;</code>) son muy eficientes porque los datos adyacentes están almacenados contiguamente.',
+    simple:'Imagina que los archivadores de una empresa están ordenados físicamente por año. Buscar todos los documentos del año 2024 es rapidísimo porque están juntos. Eso es el Clustered Index: ordena la tabla en disco para que las búsquedas por rango sean instantáneas.',
+    ejemplo_prof:'En Falabella, la tabla de boletas ordena físicamente los registros por <code>FechaEmision</code>. Cuando contabilidad necesita todas las boletas de un mes, SQL Server las lee en bloques contiguos en disco sin saltar entre páginas dispersas.',
+    sql_prof:'-- Falabella: Clustered Index por fecha para reportes mensuales\n-- (La PK usa un índice separado Non-Clustered)\nCREATE CLUSTERED INDEX idx_boletas_fecha\n    ON Boletas (FechaEmision);\n\n-- Consulta que se beneficia: lee páginas contiguas en disco\nSELECT * FROM Boletas\nWHERE FechaEmision BETWEEN \'2024-03-01\' AND \'2024-03-31\';',
+    ejemplo_bd:'En TecnoHubDB podría ser útil crear un Clustered Index en Ventas por Fecha, para que las consultas de ventas por período lean páginas contiguas. Sin embargo, ya existe el Clustered Index de la PK (ID_Venta), así que usaríamos un Non-Clustered para Fecha.',
+    sql_bd:'-- TecnoHub: ver el Clustered Index existente en Ventas\nSELECT name, type_desc\nFROM sys.indexes\nWHERE object_id = OBJECT_ID(N\'Ventas\')\n  AND type_desc = \'CLUSTERED\';\n-- Muestra: PK__Ventas__... | CLUSTERED'
+  },
+  nc:{
+    tech:'El <strong>Non-Clustered Index</strong> crea una estructura B-Tree <em>separada</em> de los datos reales de la tabla. Contiene los valores indexados junto a punteros (Row ID) que apuntan a la fila física. No afecta el orden de almacenamiento de la tabla. SQL Server permite hasta 999 por tabla.',
+    simple:'Es como el índice al final de un libro: es una lista aparte con los términos y el número de página donde están. El libro en sí no cambia de orden — el índice es una guía externa que te dice dónde ir.',
+    ejemplo_prof:'En Mercado Libre, la tabla <code>Publicaciones</code> tiene Non-Clustered Indexes sobre <code>Titulo</code>, <code>Categoria</code> y <code>Precio</code>. Así los usuarios pueden buscar por cualquiera de esos campos sin reorganizar físicamente los millones de registros.',
+    sql_prof:'-- Mercado Libre: Non-Clustered Indexes para múltiples filtros\nCREATE INDEX idx_pub_titulo\n    ON Publicaciones (Titulo);\n\nCREATE INDEX idx_pub_categoria\n    ON Publicaciones (Categoria);\n\nCREATE INDEX idx_pub_precio\n    ON Publicaciones (Precio);\n\n-- La tabla física no se reorganiza; cada índice es una estructura aparte',
+    ejemplo_bd:'En TecnoHubDB, todos los índices que creamos en el laboratorio son Non-Clustered. Por ejemplo, <code>idx_cliente_nombre</code> es una estructura B-Tree separada que contiene los nombres ordenados alfabéticamente con punteros a cada fila de Clientes.',
+    sql_bd:'-- TecnoHub: crear Non-Clustered Index en Nombre\nCREATE INDEX idx_cliente_nombre\n    ON Clientes (Nombre);\n\n-- Verificar:\nSELECT name, type_desc\nFROM sys.indexes\nWHERE object_id = OBJECT_ID(N\'Clientes\');\n-- Resultado: idx_cliente_nombre | NONCLUSTERED'
+  },
+  uq:{
+    tech:'El <strong>UNIQUE Index</strong> garantiza que no existan dos filas con el mismo valor en la columna (o combinación de columnas) indexada. Puede crearse explícitamente con <code>CREATE UNIQUE INDEX</code> o implícitamente con la restricción <code>UNIQUE</code>. Permite un único NULL (a diferencia de la PK).',
+    simple:'Es como decir: "en esta columna, cada valor debe ser irrepetible". Si alguien intenta ingresar un email que ya existe, SQL Server lo rechaza. No es solo velocidad — también es una regla de negocio.',
+    ejemplo_prof:'En el sistema de RR.HH. de una empresa, la tabla <code>Empleados</code> tiene UNIQUE INDEX sobre <code>Email</code> y sobre <code>RUT</code>. Así es imposible registrar dos empleados con el mismo correo o el mismo RUT, incluso si alguien lo intenta por error.',
+    sql_prof:'-- Sistema RR.HH.: unicidad sobre campos de identidad\nCREATE TABLE Empleados (\n    ID_Empleado  INT IDENTITY(1,1) PRIMARY KEY,\n    RUT          VARCHAR(12) NOT NULL,\n    Email        VARCHAR(255) NOT NULL,\n    Nombre       VARCHAR(255) NOT NULL\n);\n\nCREATE UNIQUE INDEX idx_emp_rut\n    ON Empleados (RUT);\n\nCREATE UNIQUE INDEX idx_emp_email\n    ON Empleados (Email);',
+    ejemplo_bd:'En TecnoHubDB, si quisiéramos garantizar que no haya dos productos con el mismo nombre (por política comercial), aplicaríamos UNIQUE INDEX en Productos(Nombre). Así un INSERT duplicado lanzará un error antes de guardar.',
+    sql_bd:'-- TecnoHub: garantizar nombres únicos de producto\nCREATE UNIQUE INDEX idx_prod_nombre_unico\n    ON Productos (Nombre);\n\n-- Este INSERT fallaría si \'Laptop\' ya existe:\n-- INSERT INTO Productos (Nombre, Precio, CantidadEnStock)\n-- VALUES (\'Laptop\', 999, 10);\n-- Error: Cannot insert duplicate key in object \'Productos\''
+  },
+  cmp:{
+    tech:'Un <strong>índice compuesto</strong> (o combinado) se define sobre dos o más columnas. SQL Server construye un B-Tree donde la clave de ordenación es la concatenación de los valores de todas las columnas incluidas. El <em>orden de las columnas importa</em>: el índice solo puede usarse como prefijo (de izquierda a derecha) en las condiciones de la consulta.',
+    simple:'Es como un archivador organizado primero por apellido y luego por nombre. Buscar por apellido solo es rápido. Buscar por apellido Y nombre es rapidísimo. Pero buscar solo por nombre sin apellido no aprovecha el archivador.',
+    ejemplo_prof:'En el sistema de despacho de una aerolínea, la tabla <code>Reservas</code> tiene un índice compuesto sobre <code>(ID_Pasajero, FechaVuelo)</code>. Las consultas "todas las reservas del pasajero X en el mes de enero" son ultra-rápidas porque filtran por ambas columnas.',
+    sql_prof:'-- Aerolínea: índice compuesto para consultas frecuentes de pasajero + fecha\nCREATE INDEX idx_reservas_pasajero_fecha\n    ON Reservas (ID_Pasajero, FechaVuelo);\n\n-- Esta consulta usa el índice completo (ambas columnas):\nSELECT * FROM Reservas\nWHERE ID_Pasajero = 12345\n  AND FechaVuelo BETWEEN \'2024-01-01\' AND \'2024-01-31\';\n\n-- Esta consulta solo usa el prefijo izquierdo (ID_Pasajero):\nSELECT * FROM Reservas WHERE ID_Pasajero = 12345;',
+    ejemplo_bd:'En TecnoHubDB, el índice <code>idx_venta_cliente_fecha</code> sobre <code>(ID_Cliente, Fecha)</code> optimiza consultas como "todas las ventas de Juan Pérez en marzo 2024". La columna más selectiva (ID_Cliente) va primero.',
+    sql_bd:'-- TecnoHub: índice compuesto para consultas de cliente por período\nCREATE INDEX idx_venta_cliente_fecha\n    ON Ventas (ID_Cliente, Fecha);\n\n-- Consulta que aprovecha ambas columnas del índice:\nSELECT v.ID_Venta, p.Nombre, v.Cantidad, v.Fecha\nFROM   Ventas v\nJOIN   Productos p ON v.ID_Producto = p.ID_Producto\nWHERE  v.ID_Cliente = 1\n  AND  v.Fecha BETWEEN \'2024-01-01\' AND \'2024-12-31\';'
+  },
+  fil:{
+    tech:'El <strong>Filtered Index</strong> es un Non-Clustered Index que incluye solo un subconjunto de las filas de la tabla, definido mediante una cláusula <code>WHERE</code>. Reduce el tamaño del índice, mejora el rendimiento de escritura y puede ser más eficiente que un índice completo cuando las consultas siempre filtran por esa condición.',
+    simple:'En lugar de indexar toda la tabla, indexas solo las filas que realmente te importan. Si el 90% de las consultas buscan solo pedidos "Activos", ¿para qué indexar también los "Cerrados" o "Cancelados"?',
+    ejemplo_prof:'En el sistema de soporte de una empresa de telecomunicaciones, la tabla <code>Tickets</code> tiene millones de registros, pero el equipo solo consulta los tickets con <code>Estado = \'Abierto\'</code>. Un Filtered Index sobre esa condición es 10 veces más pequeño que uno completo y mucho más rápido.',
+    sql_prof:'-- Telecomunicaciones: indexar solo tickets abiertos (minoría activa)\nCREATE INDEX idx_tickets_abiertos\n    ON Tickets (FechaCreacion, ID_Agente)\n    WHERE Estado = \'Abierto\';\n\n-- Solo esta consulta usará el índice filtrado:\nSELECT * FROM Tickets\nWHERE Estado = \'Abierto\'\n  AND ID_Agente = 42\nORDER BY FechaCreacion DESC;',
+    ejemplo_bd:'En TecnoHubDB, si la mayoría de consultas buscan solo productos con stock disponible, un Filtered Index sobre CantidadEnStock > 0 indexa solo los productos activos — ignorando los sin stock y haciendo el índice más liviano.',
+    sql_bd:'-- TecnoHub: indexar solo productos con stock disponible\nCREATE INDEX idx_productos_con_stock\n    ON Productos (Nombre, Precio)\n    WHERE CantidadEnStock > 0;\n\n-- Esta consulta aprovecha el Filtered Index:\nSELECT Nombre, Precio, CantidadEnStock\nFROM   Productos\nWHERE  CantidadEnStock > 0\n  AND  Precio < 1000\nORDER BY Nombre;'
+  }
 };
+
 document.querySelectorAll('.idx-card').forEach(c=>{
   c.addEventListener('click',()=>{
     document.querySelectorAll('.idx-card').forEach(x=>x.classList.remove('on'));
     c.classList.add('on');
-    const [t,b]=idxInfo[c.dataset.t];
-    document.getElementById('idx-detail-title').textContent=t;
-    document.getElementById('idx-detail-body').textContent=b;
-    document.getElementById('idx-detail').style.display='block';
+    const d=idxInfo[c.dataset.t];
+    const wrap=document.getElementById('idx-detail');
+    wrap.innerHTML=`
+      <div style="margin-bottom:1rem">
+        <span style="font-size:.63rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:.35rem">📐 Definición técnica</span>
+        <p style="font-size:.88rem;line-height:1.8;color:var(--text2);margin:0">${d.tech}</p>
+      </div>
+      <div style="background:var(--sage-dim);border:1px solid var(--sage-lt);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:1rem">
+        <span style="font-size:.63rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sage);display:block;margin-bottom:.3rem">💬 En palabras simples</span>
+        <p style="font-size:.88rem;line-height:1.75;color:var(--text2);margin:0">${d.simple}</p>
+      </div>
+      <div style="background:rgba(91,173,190,.06);border:1px solid var(--teal-lt);border-radius:8px;padding:.9rem 1.1rem;margin-bottom:1rem">
+        <span style="font-size:.63rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:.3rem">🏢 Ejemplo profesional</span>
+        <p style="font-size:.86rem;line-height:1.7;color:var(--text2);margin:0 0 .65rem">${d.ejemplo_prof}</p>
+        <pre style="background:var(--code-bg);border-radius:6px;padding:.75rem 1rem;font-size:.75rem;line-height:1.85;overflow-x:auto;margin:0;color:var(--code-txt);white-space:pre">${d.sql_prof}</pre>
+      </div>
+      <div style="background:rgba(212,148,74,.05);border:1px solid var(--amber-lt);border-radius:8px;padding:.9rem 1.1rem">
+        <span style="font-size:.63rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:.3rem">🏬 Ejemplo en TecnoHubDB</span>
+        <p style="font-size:.86rem;line-height:1.7;color:var(--text2);margin:0 0 .65rem">${d.ejemplo_bd}</p>
+        <pre style="background:var(--code-bg);border-radius:6px;padding:.75rem 1rem;font-size:.75rem;line-height:1.85;overflow-x:auto;margin:0;color:var(--code-txt);white-space:pre">${d.sql_bd}</pre>
+      </div>`;
+    wrap.style.display='block';
+    wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
     addXP(5,'Tipo explorado');
   });
 });
@@ -1388,46 +1447,206 @@ function qRestart(){
 
 // ── GLOSARIO DATA ─────────────────────────────────────
 const glosData=[
-  {term:'INDEX',cat:'sql',tech:'Estructura de datos auxiliar asociada a una tabla que permite localizar filas eficientemente. En T-SQL: CREATE INDEX nombre ON tabla(columna).',simple:'Un atajo que SQL Server usa para no revisar toda la tabla al buscar datos.'},
-  {term:'CREATE INDEX',cat:'sql',tech:'Sentencia DDL que crea un nuevo índice no agrupado (Non-Clustered) sobre una columna de una tabla existente.',simple:'El comando que le dice a SQL Server: "crea un atajo para buscar por esta columna".'},
-  {term:'DROP INDEX',cat:'sql',tech:'Sentencia DDL que elimina un índice existente. En T-SQL: DROP INDEX tabla.nombre_indice.',simple:'El comando para borrar un índice que ya no necesitas.'},
-  {term:'SELECT',cat:'sql',tech:'Sentencia DML que recupera filas de una o más tablas. Define las columnas del resultado, el origen de datos y las condiciones de filtrado.',simple:'Le dice a SQL Server: "dame estos datos de esta tabla".'},
-  {term:'FROM',cat:'sql',tech:'Cláusula de SELECT que especifica la tabla o vista de origen de los datos a consultar.',simple:'El "de dónde" de una consulta: ¿de qué tabla sacamos los datos?'},
-  {term:'WHERE',cat:'sql',tech:'Cláusula que filtra filas según una condición booleana. Se evalúa antes del GROUP BY y el HAVING.',simple:'Un filtro: "solo dame las filas donde esta condición sea verdadera".'},
-  {term:'JOIN',cat:'sql',tech:'Combina filas de dos o más tablas basándose en una condición de igualdad o comparación entre columnas relacionadas.',simple:'Une dos tablas para ver sus datos combinados, como juntar dos listas.'},
-  {term:'INNER JOIN',cat:'sql',tech:'Retorna solo las filas que tienen correspondencia en ambas tablas según la condición ON. Las filas sin coincidencia son excluidas.',simple:'Solo muestra los datos que existen en AMBAS tablas al mismo tiempo.'},
-  {term:'LEFT JOIN',cat:'sql',tech:'Retorna todas las filas de la tabla izquierda y las filas coincidentes de la tabla derecha. Si no hay coincidencia, los campos de la derecha quedan como NULL.',simple:'Muestra todos los datos de la primera tabla, aunque no tengan pareja en la segunda.'},
-  {term:'ON',cat:'sql',tech:'Cláusula del JOIN que especifica la condición de unión entre dos tablas, generalmente la igualdad entre una FK y la PK correspondiente.',simple:'La "regla" del JOIN: ¿por qué columna se unen las dos tablas?'},
-  {term:'CREATE TABLE',cat:'sql',tech:'Sentencia DDL que define una nueva tabla, sus columnas, tipos de datos y restricciones (PRIMARY KEY, FOREIGN KEY, NOT NULL, etc.).',simple:'El comando para crear una tabla nueva con todas sus columnas y reglas.'},
-  {term:'INSERT INTO',cat:'sql',tech:'Sentencia DML que agrega una o más filas de datos a una tabla existente.',simple:'El comando para agregar datos (filas) a una tabla.'},
-  {term:'PRIMARY KEY',cat:'sql',tech:'Restricción que identifica de forma única cada fila de una tabla. No permite valores NULL ni duplicados. Crea automáticamente un Clustered Index en SQL Server.',simple:'La columna (o columnas) que identifican de forma única cada fila. Como el RUT de una persona.'},
-  {term:'FOREIGN KEY',cat:'sql',tech:'Restricción de integridad referencial que vincula una columna con la PRIMARY KEY de otra tabla. Evita huérfanos y garantiza consistencia.',simple:'Una columna que apunta a la clave primaria de otra tabla. Crea el "puente" entre tablas.'},
-  {term:'NOT NULL',cat:'sql',tech:'Restricción de columna que impide insertar filas con valor nulo en esa columna. Garantiza que el campo siempre tenga un valor.',simple:'Le dice a SQL Server que ese campo es obligatorio: no puede quedar vacío.'},
-  {term:'IDENTITY',cat:'sql',tech:'Propiedad de columna en T-SQL que genera automáticamente valores numéricos incrementales. IDENTITY(semilla, incremento). Equivalente a AUTO_INCREMENT en MySQL.',simple:'Un contador automático: SQL Server pone el número solo, tú no tienes que ingresarlo.'},
-  {term:'USE',cat:'sql',tech:'Sentencia T-SQL que establece la base de datos activa para la sesión actual. Todas las consultas siguientes se ejecutarán en esa BD.',simple:'Le dice a SQL Server: "a partir de ahora, trabaja en esta base de datos".'},
-  {term:'GO',cat:'sql',tech:'Separador de lotes en T-SQL (no es una instrucción SQL estándar). Le indica al cliente (SSMS) que envíe las instrucciones anteriores como un lote de ejecución.',simple:'Un "punto y aparte" especial en SSMS: separa grupos de instrucciones que se ejecutan juntas.'},
-  {term:'CONSTRAINT',cat:'sql',tech:'Palabra clave para asignar un nombre explícito a una restricción (PK, FK, UNIQUE, CHECK). Facilita su referencia posterior para modificarla o eliminarla.',simple:'Un nombre para una regla de tu tabla, para poder identificarla y cambiarla después.'},
-  {term:'SET STATISTICS TIME ON',cat:'sql',tech:'Comando T-SQL que activa la medición de tiempo de CPU y tiempo transcurrido de cada consulta. Útil para comparar el rendimiento antes y después de crear índices.',simple:'Le pide a SQL Server que mida y muestre cuánto tiempo tardó en ejecutar la consulta.'},
-  {term:'sys.indexes',cat:'sql',tech:'Vista del catálogo del sistema en SQL Server que contiene una fila por cada índice de cada objeto (tabla, vista). Permite consultar información sobre los índices existentes.',simple:'Una tabla especial de SQL Server donde puedes ver todos los índices que existen en tu BD.'},
-  {term:'OBJECT_ID()',cat:'sql',tech:'Función del sistema en T-SQL que devuelve el identificador interno de un objeto de base de datos a partir de su nombre. Se usa en consultas al catálogo del sistema.',simple:'Una función que convierte el nombre de una tabla a su número de identificación interno.'},
-  {term:'Clustered Index',cat:'concept',tech:'Tipo de índice que ordena físicamente las páginas de datos de la tabla según los valores de la columna indexada. Solo puede existir uno por tabla. La PK lo crea por defecto.',simple:'Organiza los datos de la tabla como un archivador ordenado físicamente. Solo hay 1 por tabla.'},
-  {term:'Non-Clustered Index',cat:'concept',tech:'Índice que crea una estructura B-Tree separada de los datos reales, con punteros a las filas. No afecta el orden físico de la tabla. Máximo 999 por tabla en SQL Server.',simple:'Un índice aparte que tiene sus propios "apuntes" con referencias a dónde están los datos reales.'},
-  {term:'B-Tree',cat:'concept',tech:'Árbol Balanceado (Balanced Tree). Estructura de datos en la que todos los nodos hoja están a la misma profundidad. Permite búsquedas, inserciones y eliminaciones en O(log n). Es la base de la mayoría de índices en RDBMS.',simple:'La estructura interna del índice: como un árbol de decisión donde cada nivel reduce a la mitad las opciones, hasta llegar al dato exacto.'},
-  {term:'Full Table Scan',cat:'concept',tech:'Operación en la que el motor de base de datos recorre secuencialmente todas las filas de una tabla para satisfacer una consulta. Tiene costo O(n). Visible como "Table Scan" en el plan de ejecución de SSMS.',simple:'Cuando SQL Server no tiene atajos y revisa TODAS las filas de la tabla, una por una.'},
-  {term:'Cardinalidad',cat:'concept',tech:'En el contexto de índices: número de valores únicos en una columna respecto al total de filas. Alta cardinalidad = muchos valores únicos = candidato ideal para índice. En MER: define las relaciones 1:1, 1:N, N:M.',simple:'Qué tan "variados" son los valores de una columna. Alta cardinalidad = muchos valores diferentes.'},
-  {term:'Modelo ER',cat:'concept',tech:'Modelo Entidad-Relación. Representación conceptual de los datos y sus relaciones, independiente del motor de base de datos. Usa entidades, atributos, relaciones y cardinalidades.',simple:'El "plano arquitectónico" de una base de datos: un diagrama que muestra qué tablas hay y cómo se conectan.'},
-  {term:'Entidad',cat:'concept',tech:'Objeto del mundo real con existencia propia que es relevante para el sistema. Se representa con un rectángulo en el MER. Corresponde a una tabla en el modelo relacional.',simple:'Una "cosa" del mundo real que queremos almacenar en la BD. Ej: Cliente, Producto, Venta.'},
-  {term:'Atributo',cat:'concept',tech:'Propiedad o característica de una entidad. Se representa con una elipse en la notación Chen. Corresponde a una columna en el modelo relacional.',simple:'Una característica de una entidad. Si Clientes es la entidad, Nombre y Dirección son atributos.'},
-  {term:'Relación 1:N',cat:'concept',tech:'Relación en la que una instancia de la entidad A se asocia con muchas instancias de la entidad B, pero cada instancia de B se asocia con solo una de A.',simple:'Un cliente puede tener muchas ventas, pero cada venta pertenece a un solo cliente.'},
-  {term:'Relación N:M',cat:'concept',tech:'Relación en la que múltiples instancias de A se asocian con múltiples instancias de B. Se resuelve en el modelo relacional creando una tabla intermedia (asociativa).',simple:'Muchos estudiantes toman muchos cursos. Para guardar esto se crea una tabla intermedia.'},
-  {term:'RDBMS',cat:'prev',tech:'Relational Database Management System. Sistema de gestión de bases de datos relacionales. Implementa el modelo relacional de Codd. Ejemplos: SQL Server, MySQL, PostgreSQL, Oracle.',simple:'El "motor" de base de datos. El software que administra y organiza los datos en tablas relacionadas.'},
-  {term:'DDL',cat:'prev',tech:'Data Definition Language. Subconjunto de SQL para definir y modificar la estructura de la BD. Incluye: CREATE, ALTER, DROP, TRUNCATE.',simple:'Los comandos SQL que crean o modifican la estructura de la BD (tablas, índices, etc.).'},
-  {term:'DML',cat:'prev',tech:'Data Manipulation Language. Subconjunto de SQL para manipular datos. Incluye: SELECT, INSERT, UPDATE, DELETE.',simple:'Los comandos SQL que trabajan con los datos dentro de las tablas.'},
-  {term:'Plan de Ejecución',cat:'ssms',tech:'Representación gráfica o textual de los pasos que el motor de SQL Server seguirá para ejecutar una consulta. Muestra operadores como Table Scan, Index Seek, Nested Loops, Hash Join. Se activa con Ctrl+M en SSMS.',simple:'El "mapa de ruta" que SQL Server usará para responder tu consulta. Te dice si usó índices o no.'},
-  {term:'Index Seek',cat:'ssms',tech:'Operación del plan de ejecución de SQL Server que indica que el motor usó un índice B-Tree para acceder directamente a un subconjunto de filas. Es la operación más eficiente.',simple:'¡Buena señal! Significa que SQL Server encontró un índice y lo usó para ir directo a los datos.'},
-  {term:'Table Scan',cat:'ssms',tech:'Operación del plan de ejecución que indica que el motor recorrió toda la tabla (Full Table Scan) sin usar ningún índice. Es la operación menos eficiente en tablas grandes.',simple:'Señal de alerta: SQL Server tuvo que revisar TODAS las filas porque no había índice disponible.'},
-  {term:'SSMS',cat:'ssms',tech:'SQL Server Management Studio. Entorno gráfico integrado de Microsoft para administrar instancias de SQL Server. Incluye editor de consultas, Object Explorer, monitor de actividad y herramientas de diagnóstico.',simple:'La interfaz visual para trabajar con SQL Server. Desde aquí escribes consultas, ves tablas y creas índices.'},
-  {term:'Object Explorer',cat:'ssms',tech:'Panel lateral de SSMS que muestra una vista jerárquica de todos los objetos del servidor: bases de datos, tablas, vistas, índices, procedimientos almacenados, etc.',simple:'El panel de la izquierda en SSMS donde puedes explorar todas tus bases de datos y tablas visualmente.'},
+  {term:'INDEX',cat:'sql',
+   tech:'Estructura de datos auxiliar (B-Tree) asociada a una tabla que permite localizar filas eficientemente sin recorrer la tabla completa.',
+   simple:'Un atajo que SQL Server usa para no revisar toda la tabla al buscar datos.',
+   ejemplo_prof:'Amazon usa índices en su tabla de productos sobre Categoria y Precio para devolver resultados en milisegundos entre millones de artículos.',
+   ejemplo_bd:'CREATE INDEX idx_cliente_nombre ON Clientes(Nombre); — permite buscar clientes por nombre en TecnoHubDB sin recorrer toda la tabla.'},
+  {term:'CREATE INDEX',cat:'sql',
+   tech:'Sentencia DDL que crea un Non-Clustered Index sobre una o más columnas de una tabla existente.',
+   simple:'El comando que le dice a SQL Server: "crea un atajo para buscar por esta columna".',
+   ejemplo_prof:'Spotify crea índices sobre ArtistName en su tabla de canciones para que la búsqueda por artista sea instantánea.',
+   ejemplo_bd:'CREATE INDEX idx_venta_cliente ON Ventas(ID_Cliente); — optimiza los JOINs entre Ventas y Clientes en TecnoHubDB.'},
+  {term:'DROP INDEX',cat:'sql',
+   tech:'Sentencia DDL que elimina un índice existente. En T-SQL: DROP INDEX tabla.nombre_indice.',
+   simple:'El comando para borrar un índice que ya no necesitas o que genera overhead innecesario.',
+   ejemplo_prof:'Tras una migración masiva de datos, un DBA elimina índices temporales creados para acelerar la carga y los recrea.',
+   ejemplo_bd:'DROP INDEX Ventas.idx_venta_cliente; — elimina el índice para recrearlo con una definición diferente en TecnoHub.'},
+  {term:'SELECT',cat:'sql',
+   tech:'Sentencia DML que recupera filas de una o más tablas. Define columnas del resultado, origen de datos y condiciones de filtrado.',
+   simple:'Le dice a SQL Server: "dame estos datos de esta tabla".',
+   ejemplo_prof:'SELECT NumeroCuenta, Saldo FROM Cuentas WHERE RUT = \'12345678-9\'; — consulta el saldo de un cliente en un banco.',
+   ejemplo_bd:'SELECT Nombre, Precio FROM Productos WHERE CantidadEnStock > 0; — muestra los productos disponibles en TecnoHub.'},
+  {term:'FROM',cat:'sql',
+   tech:'Cláusula de SELECT que especifica la tabla o vista de origen de los datos a consultar.',
+   simple:'El "de dónde" de una consulta: ¿de qué tabla sacamos los datos?',
+   ejemplo_prof:'FROM Transacciones t JOIN Cuentas c ON t.ID_Cuenta = c.ID — combina dos tablas en un sistema bancario.',
+   ejemplo_bd:'FROM Ventas v JOIN Clientes c ON v.ID_Cliente = c.ID_Cliente — une las ventas con los clientes en TecnoHubDB.'},
+  {term:'WHERE',cat:'sql',
+   tech:'Cláusula que filtra filas según una condición booleana. Se evalúa antes de GROUP BY y HAVING.',
+   simple:'Un filtro: "solo dame las filas donde esta condición sea verdadera".',
+   ejemplo_prof:'WHERE FechaCompra >= \'2024-01-01\' AND Estado = \'Pagado\' — filtra ventas pagas del 2024 en un e-commerce.',
+   ejemplo_bd:'WHERE c.Nombre = \'Juan Perez\' — filtra las ventas de un cliente específico en TecnoHubDB.'},
+  {term:'JOIN',cat:'sql',
+   tech:'Combina filas de dos o más tablas basándose en una condición de igualdad entre columnas relacionadas.',
+   simple:'Une dos tablas para ver sus datos combinados, como cruzar dos listas.',
+   ejemplo_prof:'JOIN Empleados e ON p.ID_Jefe = e.ID_Empleado — une proyectos con su jefe asignado en un sistema RRHH.',
+   ejemplo_bd:'JOIN Clientes c ON v.ID_Cliente = c.ID_Cliente — une Ventas con Clientes para ver el nombre del comprador.'},
+  {term:'INNER JOIN',cat:'sql',
+   tech:'Retorna solo las filas que tienen correspondencia en ambas tablas según la condición ON.',
+   simple:'Solo muestra los datos que existen en AMBAS tablas al mismo tiempo.',
+   ejemplo_prof:'INNER JOIN Pagos ON Pedidos.ID = Pagos.ID_Pedido — muestra solo pedidos con pago registrado en un marketplace.',
+   ejemplo_bd:'INNER JOIN Productos p ON v.ID_Producto = p.ID_Producto — muestra ventas cuyo producto existe en TecnoHub.'},
+  {term:'LEFT JOIN',cat:'sql',
+   tech:'Retorna todas las filas de la tabla izquierda y las coincidentes de la derecha. Sin coincidencia, campos derechos son NULL.',
+   simple:'Muestra todos los datos de la primera tabla, aunque no tengan pareja en la segunda.',
+   ejemplo_prof:'LEFT JOIN Evaluaciones ON Empleados.ID = Evaluaciones.ID_Empleado — muestra todos los empleados, incluso sin evaluación.',
+   ejemplo_bd:'SELECT c.Nombre, v.ID_Venta FROM Clientes c LEFT JOIN Ventas v ON c.ID_Cliente = v.ID_Cliente — muestra clientes sin ventas también.'},
+  {term:'ON',cat:'sql',
+   tech:'Cláusula del JOIN que especifica la condición de unión, generalmente igualdad entre FK y PK.',
+   simple:'La "regla" del JOIN: ¿por qué columna se unen las dos tablas?',
+   ejemplo_prof:'ON Facturas.RUT_Cliente = Clientes.RUT — conecta facturas con clientes por RUT en un sistema contable.',
+   ejemplo_bd:'ON v.ID_Cliente = c.ID_Cliente — conecta Ventas con Clientes mediante la clave foránea en TecnoHubDB.'},
+  {term:'CREATE TABLE',cat:'sql',
+   tech:'Sentencia DDL que define una nueva tabla con columnas, tipos de datos y restricciones.',
+   simple:'El comando para crear una tabla nueva con todas sus columnas y reglas.',
+   ejemplo_prof:'CREATE TABLE Empleados (ID INT IDENTITY PRIMARY KEY, RUT VARCHAR(12) NOT NULL, ...) — crea tabla de empleados.',
+   ejemplo_bd:'CREATE TABLE Ventas (ID_Venta INT IDENTITY(1,1) PRIMARY KEY, ...) — crea la tabla de ventas de TecnoHub.'},
+  {term:'INSERT INTO',cat:'sql',
+   tech:'Sentencia DML que agrega una o más filas de datos a una tabla existente.',
+   simple:'El comando para agregar datos (filas) a una tabla.',
+   ejemplo_prof:'INSERT INTO Pedidos (ID_Cliente, Fecha, Total) VALUES (501, GETDATE(), 89990) — registra un pedido nuevo.',
+   ejemplo_bd:'INSERT INTO Productos (Nombre, Precio, CantidadEnStock) VALUES (\'Laptop\', 1200, 50) — agrega un producto a TecnoHub.'},
+  {term:'PRIMARY KEY',cat:'sql',
+   tech:'Restricción que identifica de forma única cada fila. No permite NULL ni duplicados. Crea Clustered Index automáticamente.',
+   simple:'La columna que identifica de forma única cada fila. Como el RUT de una persona.',
+   ejemplo_prof:'ID_Transaccion INT PRIMARY KEY — identifica cada movimiento de forma única en el sistema de pagos de un banco.',
+   ejemplo_bd:'ID_Producto INT IDENTITY(1,1) PRIMARY KEY — identifica cada producto en la tabla Productos de TecnoHub.'},
+  {term:'FOREIGN KEY',cat:'sql',
+   tech:'Restricción de integridad referencial que vincula una columna con la PK de otra tabla. Evita registros huérfanos.',
+   simple:'Una columna que apunta a la PK de otra tabla. Crea el "puente" entre tablas.',
+   ejemplo_prof:'FOREIGN KEY (ID_Sucursal) REFERENCES Sucursales(ID) — garantiza que cada empleado esté en una sucursal existente.',
+   ejemplo_bd:'FOREIGN KEY (ID_Cliente) REFERENCES Clientes(ID_Cliente) — garantiza que cada venta tenga un cliente válido en TecnoHub.'},
+  {term:'NOT NULL',cat:'sql',
+   tech:'Restricción de columna que impide insertar filas con valor nulo. Garantiza que el campo siempre tenga un valor.',
+   simple:'Le dice a SQL Server que ese campo es obligatorio: no puede quedar vacío.',
+   ejemplo_prof:'Email VARCHAR(255) NOT NULL — obliga a que todo usuario tenga email al registrarse en un sistema.',
+   ejemplo_bd:'Nombre VARCHAR(255) NOT NULL — obliga a que todo producto en TecnoHub tenga nombre registrado.'},
+  {term:'IDENTITY',cat:'sql',
+   tech:'Propiedad T-SQL que genera automáticamente valores numéricos incrementales. IDENTITY(semilla, incremento).',
+   simple:'Un contador automático: SQL Server pone el número solo, tú no tienes que ingresarlo.',
+   ejemplo_prof:'ID_Ticket INT IDENTITY(1,1) — genera automáticamente el número de ticket de soporte sin intervención del usuario.',
+   ejemplo_bd:'ID_Venta INT IDENTITY(1,1) — genera el número de venta automáticamente en TecnoHub al hacer INSERT.'},
+  {term:'USE',cat:'sql',
+   tech:'Sentencia T-SQL que establece la base de datos activa para la sesión.',
+   simple:'Le dice a SQL Server: "a partir de ahora, trabaja en esta base de datos".',
+   ejemplo_prof:'USE SistemaContable; — cambia el contexto al sistema contable antes de ejecutar consultas de facturas.',
+   ejemplo_bd:'USE TecnoHubDB; — activa TecnoHubDB en SSMS antes de crear tablas o consultar datos.'},
+  {term:'GO',cat:'sql',
+   tech:'Separador de lotes en T-SQL (no es SQL estándar). Indica al cliente SSMS que envíe las instrucciones anteriores como un lote.',
+   simple:'Un "punto y aparte" especial en SSMS: separa grupos de instrucciones que se ejecutan juntas.',
+   ejemplo_prof:'CREATE DATABASE Produccion; GO USE Produccion; GO — crea y activa la BD en dos lotes separados.',
+   ejemplo_bd:'USE TecnoHubDB; GO — después de crear la BD, GO separa ese lote del siguiente que crea las tablas.'},
+  {term:'CONSTRAINT',cat:'sql',
+   tech:'Palabra clave para asignar nombre explícito a una restricción (PK, FK, UNIQUE, CHECK).',
+   simple:'Un nombre para una regla de tu tabla, para poder identificarla y modificarla después.',
+   ejemplo_prof:'CONSTRAINT fk_pedido_cliente FOREIGN KEY (ID_Cliente) REFERENCES Clientes(ID) — nombra la FK para poder eliminarla con ALTER TABLE.',
+   ejemplo_bd:'CONSTRAINT fk_venta_cliente FOREIGN KEY (ID_Cliente) REFERENCES Clientes(ID_Cliente) — nombra la FK en la tabla Ventas de TecnoHub.'},
+  {term:'SET STATISTICS TIME ON',cat:'sql',
+   tech:'Comando T-SQL que activa la medición de tiempo de CPU y tiempo transcurrido por consulta.',
+   simple:'Le pide a SQL Server que mida y muestre cuánto tardó en ejecutar la consulta.',
+   ejemplo_prof:'Un DBA lo usa para comparar el tiempo de respuesta antes y después de crear un índice en producción.',
+   ejemplo_bd:'SET STATISTICS TIME ON; SELECT ... FROM Ventas WHERE ...; — mide cuánto tarda la consulta en TecnoHub antes y después del índice.'},
+  {term:'sys.indexes',cat:'sql',
+   tech:'Vista del catálogo del sistema en SQL Server con una fila por cada índice de cada objeto.',
+   simple:'Una tabla especial donde SQL Server guarda info sobre todos los índices que existen.',
+   ejemplo_prof:'SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(\'Pedidos\') — lista índices de una tabla en producción.',
+   ejemplo_bd:'SELECT name, type_desc FROM sys.indexes WHERE object_id = OBJECT_ID(N\'Ventas\') — lista los índices de Ventas en TecnoHub.'},
+  {term:'OBJECT_ID()',cat:'sql',
+   tech:'Función del sistema en T-SQL que devuelve el ID interno de un objeto de BD a partir de su nombre.',
+   simple:'Convierte el nombre de una tabla a su número de ID interno que SQL Server usa.',
+   ejemplo_prof:'IF OBJECT_ID(\'dbo.FacturasTemp\') IS NOT NULL DROP TABLE FacturasTemp — verifica si existe una tabla temporal.',
+   ejemplo_bd:'WHERE object_id = OBJECT_ID(N\'Clientes\') — filtra sys.indexes para ver solo los índices de Clientes en TecnoHub.'},
+  {term:'Clustered Index',cat:'concept',
+   tech:'Índice que ordena físicamente las páginas de datos de la tabla. Solo puede existir uno por tabla. La PK lo crea por defecto.',
+   simple:'Organiza los datos en disco como un archivador físico. Solo puede estar ordenado de una forma.',
+   ejemplo_prof:'En Falabella, boletas con Clustered Index en FechaEmision: los reportes mensuales leen páginas contiguas en disco sin saltos.',
+   ejemplo_bd:'La PK de Ventas (ID_Venta) crea el Clustered Index de TecnoHub. Los datos están ordenados físicamente por ID_Venta.'},
+  {term:'Non-Clustered Index',cat:'concept',
+   tech:'Índice B-Tree separado con punteros a las filas reales. No afecta el orden físico. Hasta 999 por tabla en SQL Server.',
+   simple:'Como el índice al final de un libro: una guía externa que no cambia el libro pero te dice en qué página buscar.',
+   ejemplo_prof:'Mercado Libre usa Non-Clustered Indexes sobre Titulo, Categoria y Precio para búsquedas multidimensionales sin reorganizar la tabla.',
+   ejemplo_bd:'idx_cliente_nombre en TecnoHub es Non-Clustered: estructura aparte con nombres ordenados y punteros a cada fila de Clientes.'},
+  {term:'B-Tree',cat:'concept',
+   tech:'Balanced Tree. Todos los nodos hoja a la misma profundidad. Búsqueda O(log n). Base de los índices en RDBMS.',
+   simple:'La estructura interna del índice: en cada nivel se descarta la mitad de opciones hasta llegar al dato exacto.',
+   ejemplo_prof:'Buscar un cliente entre 10 millones con B-Tree toma ~23 comparaciones en lugar de 10 millones.',
+   ejemplo_bd:'Al buscar a Juan Perez en TecnoHub con índice, el B-Tree navega ~3-5 niveles del árbol hasta encontrar la fila exacta.'},
+  {term:'Full Table Scan',cat:'concept',
+   tech:'El motor recorre secuencialmente todas las filas. Costo O(n). Visible como "Table Scan" en el plan de ejecución.',
+   simple:'SQL Server no tiene atajos y revisa TODAS las filas, una por una.',
+   ejemplo_prof:'Una tabla con 50M de transacciones sin índice tarda 45s en encontrar las de un cliente. Con índice: 0.003s.',
+   ejemplo_bd:'Antes de crear idx_cliente_nombre, buscar a Juan Perez en TecnoHub genera Table Scan y revisa las 3 filas (o millones en producción).'},
+  {term:'Cardinalidad',cat:'concept',
+   tech:'Número de valores únicos en una columna respecto al total de filas. Alta cardinalidad = buen candidato para índice.',
+   simple:'Qué tan variados son los valores de una columna. Alta = muchos distintos = buen índice.',
+   ejemplo_prof:'Email tiene cardinalidad máxima (todos únicos). Estado_Civil tiene cardinalidad baja. Solo el email justifica índice por rendimiento.',
+   ejemplo_bd:'ID_Cliente en Ventas tiene alta cardinalidad (varios clientes distintos) → buen índice. Un campo Activo (S/N) tendría baja cardinalidad → índice poco útil.'},
+  {term:'Modelo ER',cat:'concept',
+   tech:'Representación conceptual de datos y relaciones, independiente del motor. Usa entidades, atributos, relaciones y cardinalidades.',
+   simple:'El plano arquitectónico de una BD: un diagrama que muestra qué tablas hay y cómo se conectan.',
+   ejemplo_prof:'El MER de un hospital define Paciente, Médico, Consulta con sus relaciones antes de escribir una sola línea de SQL.',
+   ejemplo_bd:'El MER de TecnoHub muestra Productos, Clientes y Ventas con relaciones 1:N entre ellas.'},
+  {term:'Entidad',cat:'concept',
+   tech:'Objeto del mundo real con existencia propia relevante para el sistema. Rectángulo en el MER. Corresponde a una tabla.',
+   simple:'Una "cosa" del mundo real que queremos almacenar en la BD.',
+   ejemplo_prof:'En un sistema universitario: Alumno, Profesor, Asignatura y Sala son entidades.',
+   ejemplo_bd:'En TecnoHubDB: Productos, Clientes y Ventas son las tres entidades del sistema.'},
+  {term:'Atributo',cat:'concept',
+   tech:'Propiedad de una entidad. Elipse en notación Chen. Corresponde a una columna en el modelo relacional.',
+   simple:'Una característica de una entidad.',
+   ejemplo_prof:'La entidad Empleado tiene atributos: Nombre, RUT, Email, Cargo, Salario.',
+   ejemplo_bd:'La entidad Productos tiene atributos: Nombre, Descripcion, Precio, CantidadEnStock.'},
+  {term:'Relación 1:N',cat:'concept',
+   tech:'Una instancia de A se asocia con muchas de B, pero cada B se asocia con solo una A.',
+   simple:'Un padre tiene muchos hijos, pero cada hijo tiene solo un padre biológico.',
+   ejemplo_prof:'Un Cliente tiene muchas Órdenes, pero cada Orden pertenece a un solo Cliente (Amazon).',
+   ejemplo_bd:'En TecnoHub: un Cliente tiene muchas Ventas (1:N). Un Producto tiene muchas Ventas (1:N).'},
+  {term:'Relación N:M',cat:'concept',
+   tech:'Múltiples instancias de A se asocian con múltiples de B. Se resuelve con una tabla intermedia.',
+   simple:'Muchos con muchos: se necesita una tabla puente para guardar la relación.',
+   ejemplo_prof:'Estudiante ↔ Curso: un estudiante toma muchos cursos y un curso tiene muchos estudiantes → tabla Inscripcion.',
+   ejemplo_bd:'Si TecnoHub tuviera Proveedores y Productos: un proveedor abastece muchos productos y un producto puede tener varios proveedores → tabla ProveedorProducto.'},
+  {term:'RDBMS',cat:'prev',
+   tech:'Relational Database Management System. Implementa el modelo relacional de Codd. Ejemplos: SQL Server, MySQL, PostgreSQL, Oracle.',
+   simple:'El motor de BD: el software que organiza, guarda y permite consultar datos en tablas.',
+   ejemplo_prof:'SQL Server es el RDBMS elegido por bancos y empresas del ecosistema Microsoft en Chile.',
+   ejemplo_bd:'TecnoHubDB vive dentro de SQL Server, que es el RDBMS que usamos en esta asignatura con SSMS.'},
+  {term:'DDL',cat:'prev',
+   tech:'Data Definition Language. Subconjunto de SQL para definir estructura. Incluye: CREATE, ALTER, DROP, TRUNCATE.',
+   simple:'Los comandos que crean o modifican la estructura de la BD.',
+   ejemplo_prof:'ALTER TABLE Clientes ADD FechaNacimiento DATE — agrega una columna a producción sin perder datos.',
+   ejemplo_bd:'CREATE TABLE Ventas (...) y CREATE INDEX idx_... son sentencias DDL usadas en TecnoHubDB.'},
+  {term:'DML',cat:'prev',
+   tech:'Data Manipulation Language. Subconjunto de SQL para manipular datos. Incluye: SELECT, INSERT, UPDATE, DELETE.',
+   simple:'Los comandos que trabajan con los datos dentro de las tablas.',
+   ejemplo_prof:'UPDATE Productos SET Precio = Precio * 1.05 WHERE Categoria = \'Electrónica\' — sube precios en un e-commerce.',
+   ejemplo_bd:'INSERT INTO Ventas (ID_Producto, ID_Cliente, Cantidad, Fecha) VALUES (1,1,2,\'2024-02-15\') — agrega una venta a TecnoHub.'},
+  {term:'Plan de Ejecución',cat:'ssms',
+   tech:'Representación gráfica de los pasos que SQL Server seguirá para ejecutar una consulta. Muestra Table Scan, Index Seek, Hash Join. Activar con Ctrl+M.',
+   simple:'El mapa de ruta de SQL Server: te muestra cómo va a responder tu consulta y si usa índices.',
+   ejemplo_prof:'Un DBA revisa el plan de ejecución de una consulta lenta y detecta un Table Scan que se soluciona con un índice.',
+   ejemplo_bd:'En TecnoHub: activa Ctrl+M, ejecuta la consulta de ventas y observa Table Scan (sin índice) vs Index Seek (con índice).'},
+  {term:'Index Seek',cat:'ssms',
+   tech:'Operación en el plan de ejecución que indica que el motor usó un índice B-Tree para acceder directamente a un subconjunto de filas.',
+   simple:'¡Buena señal! SQL Server encontró el índice y saltó directo a los datos sin revisar toda la tabla.',
+   ejemplo_prof:'Después de crear idx_cliente_rut en producción, las búsquedas por RUT pasaron de Table Scan (30s) a Index Seek (0.001s).',
+   ejemplo_bd:'Después de CREATE INDEX idx_cliente_nombre ON Clientes(Nombre), buscar por nombre en TecnoHub muestra Index Seek en el plan.'},
+  {term:'Table Scan',cat:'ssms',
+   tech:'Operación en el plan que indica Full Table Scan: el motor recorrió toda la tabla sin usar índice.',
+   simple:'Señal de alerta: SQL Server tuvo que revisar TODAS las filas porque no había índice disponible.',
+   ejemplo_prof:'En un sistema con 10M de registros, un Table Scan puede tardar minutos. Es la primera señal de que falta un índice.',
+   ejemplo_bd:'Antes de crear índices en TecnoHub, la consulta de ventas por cliente muestra Table Scan. Compara antes y después del índice.'},
+  {term:'SSMS',cat:'ssms',
+   tech:'SQL Server Management Studio. Entorno gráfico de Microsoft para administrar SQL Server. Incluye editor SQL, Object Explorer y analizador de planes.',
+   simple:'La interfaz visual para trabajar con SQL Server. Desde aquí escribes, ejecutas y depuras todo.',
+   ejemplo_prof:'Los DBAs de grandes empresas usan SSMS para monitorear rendimiento, revisar planes de ejecución y gestionar índices en producción.',
+   ejemplo_bd:'En esta clase usamos SSMS para conectarnos, crear TecnoHubDB, insertar datos y analizar el impacto de los índices con el plan de ejecución.'},
+  {term:'Object Explorer',cat:'ssms',
+   tech:'Panel lateral de SSMS con vista jerárquica de todos los objetos del servidor: bases de datos, tablas, vistas, índices, procedimientos almacenados.',
+   simple:'El panel izquierdo de SSMS donde puedes ver y explorar todas tus bases de datos y tablas visualmente.',
+   ejemplo_prof:'Un DBA navega por Object Explorer para revisar qué índices tiene una tabla crítica antes de agregar uno nuevo.',
+   ejemplo_bd:'En Object Explorer: expande TecnoHubDB → Tables → Ventas → Indexes para ver todos los índices creados en el laboratorio.'},
 ];
 
 let currentCat='all',currentSearch='';
@@ -1435,27 +1654,34 @@ function renderGlos(){
   const q=currentSearch.toLowerCase();
   const filtered=glosData.filter(g=>{
     const matchCat=currentCat==='all'||g.cat===currentCat;
-    const matchSearch=!q||g.term.toLowerCase().includes(q)||g.tech.toLowerCase().includes(q)||g.simple.toLowerCase().includes(q);
+    const matchSearch=!q||g.term.toLowerCase().includes(q)||g.tech.toLowerCase().includes(q)||g.simple.toLowerCase().includes(q)||(g.ejemplo_prof&&g.ejemplo_prof.toLowerCase().includes(q))||(g.ejemplo_bd&&g.ejemplo_bd.toLowerCase().includes(q));
     return matchCat&&matchSearch;
   });
   document.getElementById('glos-n').textContent=filtered.length;
   const grid=document.getElementById('glos-grid');
   if(filtered.length===0){grid.innerHTML='<div class="empty-msg" style="padding:2rem;text-align:center;color:var(--muted)">No se encontraron términos con esa búsqueda.</div>';return;}
-  grid.innerHTML=filtered.map(g=>{
-    const tagClass={'sql':'gt-sql','concept':'gt-concept','prev':'gt-prev','ssms':'gt-ssms'}[g.cat];
-    const tagLabel={'sql':'SQL / T-SQL','concept':'Concepto BD','prev':'Conocimiento previo','ssms':'SSMS'}[g.cat];
-    return `<div class="glos-item" onclick="toggleGlos(this)">
+  const tagClass={'sql':'gt-sql','concept':'gt-concept','prev':'gt-prev','ssms':'gt-ssms'};
+  const tagLabel={'sql':'SQL / T-SQL','concept':'Concepto BD','prev':'Conocimiento previo','ssms':'SSMS'};
+  grid.innerHTML=filtered.map(g=>`
+    <div class="glos-item" onclick="toggleGlos(this)">
       <div class="glos-header">
         <span class="glos-term">${g.term}</span>
-        <span class="glos-tag ${tagClass}">${tagLabel}</span>
+        <span class="glos-tag ${tagClass[g.cat]}">${tagLabel[g.cat]}</span>
         <span class="glos-arrow">▾</span>
       </div>
       <div class="glos-body">
         <p class="glos-tech">${g.tech}</p>
         <p class="glos-simple">💬 ${g.simple}</p>
+        <div style="margin-top:.7rem;padding:.65rem .85rem;background:rgba(91,173,190,.06);border:1px solid var(--teal-lt);border-radius:6px">
+          <span style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:.25rem">🏢 Ejemplo profesional</span>
+          <p style="font-size:.82rem;color:var(--text2);margin:0;line-height:1.65">${g.ejemplo_prof}</p>
+        </div>
+        <div style="margin-top:.5rem;padding:.65rem .85rem;background:rgba(212,148,74,.05);border:1px solid var(--amber-lt);border-radius:6px">
+          <span style="font-size:.6rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:.25rem">🏬 En TecnoHubDB</span>
+          <p style="font-size:.82rem;color:var(--text2);margin:0;line-height:1.65">${g.ejemplo_bd}</p>
+        </div>
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
 }
 function toggleGlos(el){
   const wasOpen=el.classList.contains('open');
